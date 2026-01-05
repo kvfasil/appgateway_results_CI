@@ -32,10 +32,18 @@ jobs:
       run: |
         set -e
 
+        # Extract Jira ticket from commit message
+        COMMIT_MSG="${{ github.event.head_commit.message }}"
+        echo "Commit message: $COMMIT_MSG"
+
+        # Use grep to extract Jira ticket before colon
+        JIRA_NUMBER=$(echo "$COMMIT_MSG" | grep -oP '^\S+')
         if [ -z "$JIRA_NUMBER" ]; then
-          echo "JIRA_NUMBER not set in commit message!"
+          echo "Error: Jira ticket not found in commit message!"
           exit 1
         fi
+
+        echo "Using Jira ticket: $JIRA_NUMBER"
 
         # Get latest artifact
         mkdir -p extracted
@@ -77,10 +85,10 @@ jobs:
 
           if [ -z "$SHA" ]; then
             PAYLOAD=$(jq -n --arg msg "Add $REL_PATH from artifact" --arg content "$CONTENT" \
-                     '{message: $msg, content: $content, branch: "'$JIRA_NUMBER'"}')
+                    '{message: $msg, content: $content, branch: "'$JIRA_NUMBER'"}')
           else
             PAYLOAD=$(jq -n --arg msg "Update $REL_PATH from artifact" --arg content "$CONTENT" --arg sha "$SHA" \
-                     '{message: $msg, content: $content, branch: "'$JIRA_NUMBER'", sha: $sha}')
+                    '{message: $msg, content: $content, branch: "'$JIRA_NUMBER'", sha: $sha}')
           fi
 
           curl -s -X PUT \
@@ -91,4 +99,5 @@ jobs:
         done
 
         echo "All files pushed to branch $JIRA_NUMBER"
+
 
