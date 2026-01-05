@@ -1,0 +1,82 @@
+name: Jira Artifact Extract
+
+on:
+  push:
+    branches:
+      - main        # your default branch
+      - '*'   
+
+jobs:
+  extract-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Get latest commit message
+      id: commit
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        echo "commit_msg=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+    - name: Extract JIRA number
+      id: jira
+      run: |
+        if [[ "${{ steps.commit.outputs.commit_msg }}" =~ JIRA[[:space:]]*:[[:space:]]*([A-Z]+-[0-9]+) ]]; then
+          echo "JIRA_NUMBER=${BASH_REMATCH[1]}" >> $GITHUB_ENV
+        else
+          echo "No valid JIRA number found in commit message"
+          exit 1
+        fi
+
+    - name: Check/Create Jira Branch
+      run: |
+        # Check branch
+        BRANCH_EXISTS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${GITHUB_REPOSITORY}/branches/${JIRA_NUMBER})
+        if [[ "$BRANCH_EXISTS" == *"Not Found"* ]]; then
+          echo "Creating branch $JIRA_NUMBER"
+          DEFAULT_SHA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${GITHUB_REPOSITORY}/git/ref/heads/main \
+            | jq -r '.object.sha')
+          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d "{\"ref\":\"refs/heads/$JIRA_NUMBER\",\"sha\":\"$DEFAULT_SHA\"}" \
+            https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs
+        else
+          echo "Branch $JIRA_NUMBER already exists"
+        fi
+
+    - name: Extract artifact into Jira folder
+      run: |
+        mkdir -p extracted
+        # Extract latest artifact
+        LATEST_ARTIFACT=$(ls artifacts/*.tar.gz | sort | tail -n1)
+        tar -xzf "$LATEST_ARTIFACT" -C extracted
+
+        # Prepare folder for Jira number in the branch
+        mkdir -p "$JIRA_NUMBER"
+        cp -r extracted/* "$JIRA_NUMBER/"
+
+        # Push files to Jira branch via API
+        for FILE in $(find $JIRA_NUMBER -type f); do
+          REL_PATH="${FILE#./}"
+          CONTENT=$(base64 -w 0 "$FILE")
+          SHA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/$REL_PATH?ref=$JIRA_NUMBER \
+                | jq -r '.sha // empty')
+
+          if [ -z "$SHA" ]; then
+            PAYLOAD=$(jq -n --arg msg "Add $REL_PATH from artifact" --arg content "$CONTENT" \
+                     '{message: $msg, content: $content, branch: "'$JIRA_NUMBER'"}')
+          else
+            PAYLOAD=$(jq -n --arg msg "Update $REL_PATH from artifact" --arg content "$CONTENT" --arg sha "$SHA" \
+                     '{message: $msg, content: $content, branch: "'$JIRA_NUMBER'", sha: $sha}')
+          fi
+
+          curl -s -X PUT \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d "$PAYLOAD" \
+            https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/$REL_PATH
+        done
