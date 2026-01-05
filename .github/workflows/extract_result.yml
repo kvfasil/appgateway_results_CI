@@ -5,6 +5,11 @@ on:
     branches:
       - main        # your default branch
       - '*'   
+    paths:
+      - 'artifacts/*.tar.gz'   # trigger on artifact push
+
+permissions:
+  contents: write
 
 jobs:
   extract-artifact:
