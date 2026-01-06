@@ -67,27 +67,31 @@ jobs:
         mkdir -p "$FINAL_DIR"
         cp -r extracted/* "$FINAL_DIR/"
 
-        echo "Prepared directory: $FINAL_DIR"
+        echo "[INFO] Prepared directory: $FINAL_DIR"
 
         # --------------------------------------------------
         # Push extracted files BACK to SAME Jira branch
         # --------------------------------------------------
         find "$FINAL_DIR" -type f | while read FILE; do
           REL_PATH="${FILE#./}"
+          echo "[INFO] Processing file: $FILE (relative: $REL_PATH)"
           CONTENT=$(base64 -w 0 "$FILE")
 
+          echo "[INFO] Checking for existing file in repo: $REL_PATH"
           SHA=$(curl -s \
             -H "Authorization: token $GITHUB_TOKEN" \
             "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH?ref=$JIRA_NUMBER" \
             | jq -r '.sha // empty')
 
           if [ -z "$SHA" ]; then
+            echo "[INFO] No existing file found. Creating new file: $REL_PATH"
             PAYLOAD=$(jq -n \
               --arg msg "Add $REL_PATH from artifact" \
               --arg content "$CONTENT" \
               --arg branch "$JIRA_NUMBER" \
               '{message: $msg, content: $content, branch: $branch}')
           else
+            echo "[INFO] Existing file found (sha: $SHA). Updating: $REL_PATH"
             PAYLOAD=$(jq -n \
               --arg msg "Update $REL_PATH from artifact" \
               --arg content "$CONTENT" \
@@ -96,11 +100,13 @@ jobs:
               '{message: $msg, content: $content, branch: $branch, sha: $sha}')
           fi
 
-          curl -s -X PUT \
+          echo "[INFO] Sending PUT request to GitHub API for $REL_PATH"
+          RESPONSE=$(curl -s -X PUT \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -d "$PAYLOAD" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH"
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH")
+          echo "[INFO] GitHub API response for $REL_PATH: $RESPONSE"
         done
 
         echo "✅ Extracted files pushed to branch $JIRA_NUMBER under $TIMESTAMP"
