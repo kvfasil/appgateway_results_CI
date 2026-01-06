@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "# Firebolt Schema Validation Report" > SUMMARY.md
           echo >> SUMMARY.md
-          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html" >> SUMMARY.md
+          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html" >> SUMMARY.md
           echo >> SUMMARY.md
           echo "_This link points to the GitHub Pages deployment of the firebolt schema validation report for the current branch._" >> SUMMARY.md
 
