@@ -39,18 +39,26 @@ jobs:
         run: |
           python3 .github/scripts/generate_firebolt_html.py
 
-      - name: Commit and push HTML to same branch
+      - name: Generate SUMMARY.md with GitHub Pages link
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add firebolt_schema_validation_result.html
-          git commit -m "Add/update HTML report [skip ci]" || echo "No changes to commit"
-          git push origin ${{ steps.get_branch.outputs.branch }}
+          echo "# Firebolt Schema Validation Report" > SUMMARY.md
+          echo >> SUMMARY.md
+          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html" >> SUMMARY.md
+          echo >> SUMMARY.md
+          echo "_This link points to the GitHub Pages deployment of the firebolt schema validation report for the current branch._" >> SUMMARY.md
+
+      - name: Commit SUMMARY.md to branch
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add SUMMARY.md
+          git commit -m "Add SUMMARY.md with GitHub Pages link" || echo "No changes to commit"
+          git push origin HEAD:${{ steps.get_branch.outputs.branch }}
 
       - name: Copy HTML to publish directory
         run: |
-          mkdir -p ghpages
-          cp firebolt_schema_validation_result.html ghpages/index.html
+          mkdir -p ghpages/${{ steps.get_branch.outputs.branch }}
+          cp firebolt_schema_validation_result.html ghpages/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html
 
       - name: Deploy to GitHub Pages for web view
         uses: peaceiris/actions-gh-pages@v4
