@@ -20,11 +20,23 @@ branch_name = get_branch_name()
 if not branch_name:
   raise RuntimeError('Could not determine branch name.')
 
-# Find the latest JSON file in <branch_name>/*/complete_firebolt_schema_validation_response.json
-json_candidates = glob.glob(f'{branch_name}/*/complete_firebolt_schema_validation_response.json')
-if not json_candidates:
-  raise FileNotFoundError(f'No firebolt schema validation JSON found in {branch_name}.')
-latest_json = max(json_candidates, key=os.path.getmtime)
+# Check if a folder with the branch name exists
+if not os.path.isdir(branch_name):
+  raise FileNotFoundError(f'No folder found for branch: {branch_name}')
+
+# Find all subfolders (assumed to be timestamped) inside the branch folder
+subfolders = [f.path for f in os.scandir(branch_name) if f.is_dir()]
+if not subfolders:
+  raise FileNotFoundError(f'No subfolders found in {branch_name}')
+
+# Pick the latest subfolder by name (assuming timestamp format)
+latest_subfolder = sorted(subfolders)[-1]
+
+# Look for the JSON file in the latest subfolder
+json_path = os.path.join(latest_subfolder, 'complete_firebolt_schema_validation_response.json')
+if not os.path.isfile(json_path):
+  raise FileNotFoundError(f'No firebolt schema validation JSON found in {json_path}')
+latest_json = json_path
 
 with open(latest_json) as f:
     data = json.load(f)
