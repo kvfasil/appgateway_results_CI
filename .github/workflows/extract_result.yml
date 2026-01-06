@@ -69,48 +69,12 @@ jobs:
         echo "[INFO] Prepared directory: $FINAL_DIR"
 
         # --------------------------------------------------
-        # Push extracted files BACK to SAME Jira branch
+        # Push extracted files BACK to SAME Jira branch using git
         # --------------------------------------------------
-        echo "[INFO] Listing files in $FINAL_DIR:"
-        find "$FINAL_DIR" -type f | while read f; do echo "[INFO] Found file: $f"; done
-
-        find "$FINAL_DIR" -type f | while read FILE; do
-          REL_PATH="${FILE#./}"
-          echo "[INFO] Processing file: $FILE (relative: $REL_PATH)"
-          base64 -w 0 "$FILE" > content.b64
-          CONTENT=$(cat content.b64)
-
-          echo "[INFO] Checking for existing file in repo: $REL_PATH"
-          SHA=$(curl -s \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH?ref=$JIRA_NUMBER" \
-            | jq -r '.sha // empty')
-
-          if [ -z "$SHA" ]; then
-            echo "[INFO] No existing file found. Creating new file: $REL_PATH"
-            PAYLOAD=$(jq -n \
-              --arg msg "Add $REL_PATH from artifact" \
-              --arg content "$CONTENT" \
-              --arg branch "$JIRA_NUMBER" \
-              '{message: $msg, content: $content, branch: $branch}')
-          else
-            echo "[INFO] Existing file found (sha: $SHA). Updating: $REL_PATH"
-            PAYLOAD=$(jq -n \
-              --arg msg "Update $REL_PATH from artifact" \
-              --arg content "$CONTENT" \
-              --arg branch "$JIRA_NUMBER" \
-              --arg sha "$SHA" \
-              '{message: $msg, content: $content, branch: $branch, sha: $sha}')
-          fi
-
-          echo "[INFO] Sending PUT request to GitHub API for $REL_PATH"
-          RESPONSE=$(curl -s -X PUT \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            -d "$PAYLOAD" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH")
-          echo "[INFO] GitHub API response for $REL_PATH: $RESPONSE"
-          rm -f content.b64
-        done
-
-        echo "✅ Extracted files pushed to branch $JIRA_NUMBER under $TIMESTAMP"
+        echo "[INFO] Adding files to git for branch $JIRA_NUMBER"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add "$FINAL_DIR"
+        git commit -m "Add extracted files for $JIRA_NUMBER at $TIMESTAMP" || echo "[INFO] No changes to commit"
+        git push origin HEAD:"$JIRA_NUMBER"
+        echo "✅ Extracted files pushed to branch $JIRA_NUMBER under $TIMESTAMP using git"
