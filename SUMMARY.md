@@ -7,3 +7,7 @@ _This link points to the GitHub Pages deployment of the firebolt schema validati
 
 Regression Report : https://kvfasil.github.io/appgateway_results_CI/RDKEMW-11146/comparison_report.html
 
+
+
+Regression Report : https://kvfasil.github.io/appgateway_results_CI/RDKEMW-11146/comparison_report.html
+
