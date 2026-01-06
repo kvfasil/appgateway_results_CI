@@ -37,7 +37,7 @@ jobs:
         env:
           RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
-          python3 python3 .github/scripts/generate_comparison_report.py
+          python3 .github/scripts/generate_comparison_report.py
 
       - name: Generate SUMMARY.md with GitHub Pages link
         run: |
