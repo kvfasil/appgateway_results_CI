@@ -18,31 +18,40 @@ def get_branch_name():
 
 import sys
 branch_name = os.environ.get('GITHUB_HEAD_REF') or os.environ.get('GITHUB_REF_NAME') or get_branch_name()
+print(f"[DEBUG] Detected branch name: {branch_name}")
 if not branch_name:
   raise RuntimeError('Could not determine branch name.')
+
+# List all visible folders in the workspace
+all_folders = [f for f in os.listdir('.') if os.path.isdir(f) and not f.startswith('.')]
+print(f"[DEBUG] Visible folders in workspace: {all_folders}")
 
 # Try to use the branch-named folder first
 if os.path.isdir(branch_name):
   search_folder = branch_name
+  print(f"[DEBUG] Using branch-named folder: {search_folder}")
 else:
   # Fallback: pick the first folder matching pattern (e.g., RDKEMW-*)
-  candidates = [f for f in os.listdir('.') if os.path.isdir(f) and not f.startswith('.')]
-  if not candidates:
-    raise FileNotFoundError('No candidate results folders found.')
-  search_folder = sorted(candidates)[-1]
+  if not all_folders:
+    raise FileNotFoundError('[ERROR] No candidate results folders found in workspace root.')
+  search_folder = sorted(all_folders)[-1]
+  print(f"[DEBUG] Branch-named folder not found. Using fallback folder: {search_folder}")
 
 # Find all subfolders (assumed to be timestamped) inside the search folder
 subfolders = [f.path for f in os.scandir(search_folder) if f.is_dir()]
+print(f"[DEBUG] Subfolders in {search_folder}: {[os.path.basename(f) for f in subfolders]}")
 if not subfolders:
-  raise FileNotFoundError(f'No subfolders found in {search_folder}')
+  raise FileNotFoundError(f'[ERROR] No subfolders found in {search_folder}. Folder contents: {os.listdir(search_folder)}')
 
 # Pick the latest subfolder by name (assuming timestamp format)
 latest_subfolder = sorted(subfolders)[-1]
+print(f"[DEBUG] Using latest subfolder: {latest_subfolder}")
 
 # Look for the JSON file in the latest subfolder
 json_path = os.path.join(latest_subfolder, 'complete_firebolt_schema_validation_response.json')
+print(f"[DEBUG] Looking for JSON at: {json_path}")
 if not os.path.isfile(json_path):
-  raise FileNotFoundError(f'No firebolt schema validation JSON found in {json_path}')
+  raise FileNotFoundError(f'[ERROR] No firebolt schema validation JSON found in {json_path}. Files in subfolder: {os.listdir(latest_subfolder)}')
 latest_json = json_path
 
 with open(latest_json) as f:
