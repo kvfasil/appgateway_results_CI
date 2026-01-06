@@ -28,6 +28,11 @@ jobs:
         run: |
           echo "::set-output name=branch::${{ github.event.workflow_run.head_branch }}"
 
+      - name: Checkout correct branch
+        run: |
+          git fetch origin ${{ steps.get_branch.outputs.branch }}
+          git checkout ${{ steps.get_branch.outputs.branch }}
+
       - name: Generate HTML from JSON
         env:
           RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
