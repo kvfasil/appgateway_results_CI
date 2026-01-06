@@ -1,9 +1,10 @@
 name: Generate Firebolt Schema Validation Result
 
 on:
-  push:
-    paths:
-      - 'artifacts/**'
+  workflow_run:
+    workflows: ["Jira Artifact Extract"]
+    types:
+      - completed
 
 jobs:
   generate-html:
