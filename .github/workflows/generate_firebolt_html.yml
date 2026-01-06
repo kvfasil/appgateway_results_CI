@@ -6,19 +6,31 @@ on:
     types:
       - completed
 
+permissions:
+  contents: write
+
 jobs:
   generate-html:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
+      - name: Get branch name from triggering workflow
+        id: get_branch
+        run: |
+          echo "::set-output name=branch::${{ github.event.workflow_run.head_branch }}"
+
       - name: Generate HTML from JSON
+        env:
+          RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           python3 .github/scripts/generate_firebolt_html.py
 

@@ -17,7 +17,7 @@ def get_branch_name():
     return None
 
 import sys
-branch_name = os.environ.get('GITHUB_HEAD_REF') or os.environ.get('GITHUB_REF_NAME') or get_branch_name()
+branch_name = os.environ.get('RESULT_BRANCH') or os.environ.get('GITHUB_HEAD_REF') or os.environ.get('GITHUB_REF_NAME') or get_branch_name()
 print(f"[DEBUG] Detected branch name: {branch_name}")
 if not branch_name:
   raise RuntimeError('Could not determine branch name.')
