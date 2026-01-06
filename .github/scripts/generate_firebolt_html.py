@@ -67,15 +67,15 @@ html = f"""<!DOCTYPE html>
   <title>Firebolt Schema Validation Result</title>
   <style>
     body {{ font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }}
-    .container {{ max-width: 900px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }}
+    .container {{ max-width: 1100px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }}
     h1 {{ text-align: center; }}
     .summary {{ display: flex; justify-content: space-around; margin-bottom: 20px; }}
     .summary div {{ background: #eee; border-radius: 8px; padding: 16px 32px; text-align: center; }}
     .summary .passed {{ color: #2e7d32; font-weight: bold; }}
     .summary .failed {{ color: #c62828; font-weight: bold; }}
     .summary .skipped {{ color: #888; }}
-    .tabs {{ display: flex; justify-content: center; margin-bottom: 20px; }}
-    .tab {{ padding: 12px 32px; cursor: pointer; border-radius: 8px 8px 0 0; background: #ddd; margin: 0 2px; font-weight: bold; }}
+    .tabs {{ display: flex; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }}
+    .tab {{ padding: 12px 32px; cursor: pointer; border-radius: 8px; background: #ddd; margin: 4px; font-weight: bold; }}
     .tab.active {{ background: #1976d2; color: #fff; }}
     .test-list {{ background: #fafafa; border-radius: 0 0 8px 8px; padding: 16px; }}
     .test-item {{ border-bottom: 1px solid #eee; padding: 12px 0; }}
@@ -113,6 +113,7 @@ html = f"""<!DOCTYPE html>
       <table id="categorySummaryTable">
         <thead><tr><th>Category</th><th>Total</th><th>Passed</th><th>Failed</th><th>Skipped</th></tr></thead>
         <tbody id="categorySummaryBody"></tbody>
+        <tfoot id="categorySummaryFoot"></tfoot>
       </table>
     </div>
     <div class="tabs" id="categoryTabs" style="margin-bottom: 20px;"></div>
