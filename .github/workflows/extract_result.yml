@@ -1,135 +1,106 @@
 name: Jira Artifact Extract
 
-# Trigger workflow when an artifact is pushed
 on:
   push:
     paths:
       - 'artifacts/*.tar.gz'
     branches:
-      - main   # or the branch where artifacts are pushed
+      - '**'   # trigger on ALL branches (Jira branches)
 
-# Ensure the GITHUB_TOKEN can write to repo
 permissions:
   contents: write
 
 jobs:
   extract-and-push:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REPOSITORY: ${{ github.repository }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
-
-    # Checkout repo to have access to files
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    # Extract artifact and push to Jira branch
-    - name: Extract artifact and push to Jira branch
-      shell: bash
+    - name: Extract artifact and push extracted files to Jira branch
+      shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       env:
-        JIRA_NUMBER: ${{ github.event.head_commit.message }} # Or pass via commit message
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          set -e
+        set -e
 
-          # -----------------------------
-          # Extract Jira ticket from commit message
-          # -----------------------------
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          echo "Commit message: $COMMIT_MSG"
+        # --------------------------------------------------
+        # Jira branch = branch name (artifact already uploaded here)
+        # --------------------------------------------------
+        JIRA_NUMBER="${GITHUB_REF_NAME}"
 
-          JIRA_NUMBER=$(echo "$COMMIT_MSG" | grep -oP '^\S+')
-          if [ -z "$JIRA_NUMBER" ]; then
-            echo "Error: Jira ticket not found in commit message"
-            exit 1
-          fi
+        if [ -z "$JIRA_NUMBER" ]; then
+          echo "ERROR: Could not determine Jira branch name"
+          exit 1
+        fi
 
-          echo "Using Jira ticket: $JIRA_NUMBER"
+        echo "Jira branch detected: $JIRA_NUMBER"
 
-          # -----------------------------
-          # Generate timestamp folder
-          # -----------------------------
-          TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-          echo "Using timestamp: $TIMESTAMP"
+        # --------------------------------------------------
+        # Generate timestamp folder
+        # --------------------------------------------------
+        TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+        echo "Timestamp: $TIMESTAMP"
 
-          # -----------------------------
-          # Extract latest artifact
-          # -----------------------------
-          mkdir -p extracted
-          LATEST_ARTIFACT=$(ls artifacts/*.tar.gz | sort | tail -n1)
+        # --------------------------------------------------
+        # Extract latest artifact from THIS branch
+        # --------------------------------------------------
+        mkdir -p extracted
+        LATEST_ARTIFACT=$(ls artifacts/*.tar.gz | sort | tail -n1)
 
-          if [ -z "$LATEST_ARTIFACT" ]; then
-            echo "No artifact found!"
-            exit 1
-          fi
+        if [ -z "$LATEST_ARTIFACT" ]; then
+          echo "ERROR: No artifact found in branch $JIRA_NUMBER"
+          exit 1
+        fi
 
-          echo "Extracting: $LATEST_ARTIFACT"
-          tar -xzf "$LATEST_ARTIFACT" -C extracted
+        echo "Extracting artifact: $LATEST_ARTIFACT"
+        tar -xzf "$LATEST_ARTIFACT" -C extracted
 
-          # -----------------------------
-          # Ensure Jira branch exists
-          # -----------------------------
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+        # --------------------------------------------------
+        # Prepare Jira/timestamp directory
+        # --------------------------------------------------
+        FINAL_DIR="$JIRA_NUMBER/$TIMESTAMP"
+        mkdir -p "$FINAL_DIR"
+        cp -r extracted/* "$FINAL_DIR/"
+
+        echo "Prepared directory: $FINAL_DIR"
+
+        # --------------------------------------------------
+        # Push extracted files BACK to SAME Jira branch
+        # --------------------------------------------------
+        find "$FINAL_DIR" -type f | while read FILE; do
+          REL_PATH="${FILE#./}"
+          CONTENT=$(base64 -w 0 "$FILE")
+
+          SHA=$(curl -s \
             -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/branches/$JIRA_NUMBER")
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH?ref=$JIRA_NUMBER" \
+            | jq -r '.sha // empty')
 
-          if [ "$HTTP_STATUS" -eq 404 ]; then
-            echo "Creating branch $JIRA_NUMBER"
-            DEFAULT_SHA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/git/ref/heads/main" | jq -r '.object.sha')
-
-            curl -s -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              -d "{\"ref\":\"refs/heads/$JIRA_NUMBER\",\"sha\":\"$DEFAULT_SHA\"}" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs"
+          if [ -z "$SHA" ]; then
+            PAYLOAD=$(jq -n \
+              --arg msg "Add $REL_PATH from artifact" \
+              --arg content "$CONTENT" \
+              --arg branch "$JIRA_NUMBER" \
+              '{message: $msg, content: $content, branch: $branch}')
           else
-            echo "Branch $JIRA_NUMBER already exists"
+            PAYLOAD=$(jq -n \
+              --arg msg "Update $REL_PATH from artifact" \
+              --arg content "$CONTENT" \
+              --arg branch "$JIRA_NUMBER" \
+              --arg sha "$SHA" \
+              '{message: $msg, content: $content, branch: $branch, sha: $sha}')
           fi
 
-          # -----------------------------
-          # Prepare final directory
-          # -----------------------------
-          FINAL_DIR="$JIRA_NUMBER/$TIMESTAMP"
-          mkdir -p "$FINAL_DIR"
-          cp -r extracted/* "$FINAL_DIR/"
+          curl -s -X PUT \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -d "$PAYLOAD" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH"
+        done
 
-          echo "Prepared directory: $FINAL_DIR"
-
-          # -----------------------------
-          # Push files to Jira branch
-          # -----------------------------
-          find "$FINAL_DIR" -type f | while read FILE; do
-            REL_PATH="${FILE#./}"
-            CONTENT=$(base64 -w 0 "$FILE")
-
-            SHA=$(curl -s \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH?ref=$JIRA_NUMBER" \
-              | jq -r '.sha // empty')
-
-            if [ -z "$SHA" ]; then
-              PAYLOAD=$(jq -n \
-                --arg msg "Add $REL_PATH" \
-                --arg content "$CONTENT" \
-                --arg branch "$JIRA_NUMBER" \
-                '{message: $msg, content: $content, branch: $branch}')
-            else
-              PAYLOAD=$(jq -n \
-                --arg msg "Update $REL_PATH" \
-                --arg content "$CONTENT" \
-                --arg branch "$JIRA_NUMBER" \
-                --arg sha "$SHA" \
-                '{message: $msg, content: $content, branch: $branch, sha: $sha}')
-            fi
-
-            curl -s -X PUT \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              -d "$PAYLOAD" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH"
-          done
-
-          echo "✅ Artifact extracted into $JIRA_NUMBER/$TIMESTAMP and pushed successfully"
-
-
+        echo "✅ Extracted files pushed to branch $JIRA_NUMBER under $TIMESTAMP"
