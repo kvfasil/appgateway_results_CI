@@ -34,17 +34,16 @@ jobs:
         JIRA_NUMBER="${GITHUB_REF_NAME}"
 
         if [ -z "$JIRA_NUMBER" ]; then
-          echo "ERROR: Could not determine Jira branch name"
+          echo "[ERROR] Could not determine Jira branch name"
           exit 1
         fi
 
-        echo "Jira branch detected: $JIRA_NUMBER"
-
+        echo "[INFO] Jira branch detected: $JIRA_NUMBER"
         # --------------------------------------------------
         # Generate timestamp folder
         # --------------------------------------------------
         TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-        echo "Timestamp: $TIMESTAMP"
+        echo "[INFO] Timestamp: $TIMESTAMP"
 
         # --------------------------------------------------
         # Extract latest artifact from THIS branch
@@ -57,7 +56,7 @@ jobs:
           exit 1
         fi
 
-        echo "Extracting artifact: $LATEST_ARTIFACT"
+        echo "[INFO] Extracting artifact: $LATEST_ARTIFACT"
         tar -xzf "$LATEST_ARTIFACT" -C extracted
 
         # --------------------------------------------------
@@ -72,10 +71,14 @@ jobs:
         # --------------------------------------------------
         # Push extracted files BACK to SAME Jira branch
         # --------------------------------------------------
+        echo "[INFO] Listing files in $FINAL_DIR:"
+        find "$FINAL_DIR" -type f | while read f; do echo "[INFO] Found file: $f"; done
+
         find "$FINAL_DIR" -type f | while read FILE; do
           REL_PATH="${FILE#./}"
           echo "[INFO] Processing file: $FILE (relative: $REL_PATH)"
           base64 -w 0 "$FILE" > content.b64
+          CONTENT=$(cat content.b64)
 
           echo "[INFO] Checking for existing file in repo: $REL_PATH"
           SHA=$(curl -s \
@@ -87,14 +90,14 @@ jobs:
             echo "[INFO] No existing file found. Creating new file: $REL_PATH"
             PAYLOAD=$(jq -n \
               --arg msg "Add $REL_PATH from artifact" \
-              --argfile content content.b64 \
+              --arg content "$CONTENT" \
               --arg branch "$JIRA_NUMBER" \
               '{message: $msg, content: $content, branch: $branch}')
           else
             echo "[INFO] Existing file found (sha: $SHA). Updating: $REL_PATH"
             PAYLOAD=$(jq -n \
               --arg msg "Update $REL_PATH from artifact" \
-              --argfile content content.b64 \
+              --arg content "$CONTENT" \
               --arg branch "$JIRA_NUMBER" \
               --arg sha "$SHA" \
               '{message: $msg, content: $content, branch: $branch, sha: $sha}')
