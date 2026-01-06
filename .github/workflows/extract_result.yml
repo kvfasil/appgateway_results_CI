@@ -75,7 +75,7 @@ jobs:
         find "$FINAL_DIR" -type f | while read FILE; do
           REL_PATH="${FILE#./}"
           echo "[INFO] Processing file: $FILE (relative: $REL_PATH)"
-          CONTENT=$(base64 -w 0 "$FILE")
+          base64 -w 0 "$FILE" > content.b64
 
           echo "[INFO] Checking for existing file in repo: $REL_PATH"
           SHA=$(curl -s \
@@ -87,14 +87,14 @@ jobs:
             echo "[INFO] No existing file found. Creating new file: $REL_PATH"
             PAYLOAD=$(jq -n \
               --arg msg "Add $REL_PATH from artifact" \
-              --arg content "$CONTENT" \
+              --argfile content content.b64 \
               --arg branch "$JIRA_NUMBER" \
               '{message: $msg, content: $content, branch: $branch}')
           else
             echo "[INFO] Existing file found (sha: $SHA). Updating: $REL_PATH"
             PAYLOAD=$(jq -n \
               --arg msg "Update $REL_PATH from artifact" \
-              --arg content "$CONTENT" \
+              --argfile content content.b64 \
               --arg branch "$JIRA_NUMBER" \
               --arg sha "$SHA" \
               '{message: $msg, content: $content, branch: $branch, sha: $sha}')
@@ -107,6 +107,7 @@ jobs:
             -d "$PAYLOAD" \
             "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$REL_PATH")
           echo "[INFO] GitHub API response for $REL_PATH: $RESPONSE"
+          rm -f content.b64
         done
 
         echo "✅ Extracted files pushed to branch $JIRA_NUMBER under $TIMESTAMP"
