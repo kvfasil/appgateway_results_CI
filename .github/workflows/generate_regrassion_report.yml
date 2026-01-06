@@ -2,7 +2,7 @@ name: Generate Comparison Report
 
 on:
   workflow_run:
-    workflows: ["Jira Artifact Extract"]
+    workflows: ["Generate Firebolt Schema Validation Result"]
     types:
       - completed
 
