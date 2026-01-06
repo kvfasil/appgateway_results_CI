@@ -67,7 +67,6 @@ jobs:
           publish_dir: ghpages
           publish_branch: gh-pages
           keep_files: true
-          force_orphan: true
           user_name: github-actions[bot]
           user_email: github-actions[bot]@users.noreply.github.com
           cname: ''

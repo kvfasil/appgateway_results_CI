@@ -1,0 +1,66 @@
+name: Generate Comparison Report
+
+on:
+  workflow_run:
+    workflows: ["Jira Artifact Extract"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  generate-comparison:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch name from triggering workflow
+        id: get_branch
+        run: |
+          echo "branch_name=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.branch_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: List files for verification
+        run: ls -R
+
+      - name: Generate Comparison Report
+        run: python3 .github/scripts/generate_comparison_report.py
+        working-directory: ${{ github.workspace }}
+
+      - name: Update SUMMARY.md with Comparison Report link
+        run: |
+          echo >> SUMMARY.md
+          echo "Regression Report: https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ env.branch_name }}/comparison_report.html" >> SUMMARY.md
+
+      - name: Commit SUMMARY.md to branch
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add SUMMARY.md
+          git commit -m "Add regression report link to SUMMARY.md" || echo "No changes to commit"
+          git push origin HEAD:${{ env.branch_name }}
+
+      - name: Copy HTML to publish directory
+        run: |
+          mkdir -p ghpages/${{ env.branch_name }}
+          cp comparison_report.html ghpages/${{ env.branch_name }}/comparison_report.html
+
+      - name: Deploy to GitHub Pages for web view
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ghpages
+          publish_branch: gh-pages
+          keep_files: true
+          force_orphan: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+          cname: ''
