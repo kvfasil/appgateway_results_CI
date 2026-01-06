@@ -16,18 +16,25 @@ def get_branch_name():
   except Exception:
     return None
 
-branch_name = get_branch_name()
+import sys
+branch_name = os.environ.get('GITHUB_HEAD_REF') or os.environ.get('GITHUB_REF_NAME') or get_branch_name()
 if not branch_name:
   raise RuntimeError('Could not determine branch name.')
 
-# Check if a folder with the branch name exists
-if not os.path.isdir(branch_name):
-  raise FileNotFoundError(f'No folder found for branch: {branch_name}')
+# Try to use the branch-named folder first
+if os.path.isdir(branch_name):
+  search_folder = branch_name
+else:
+  # Fallback: pick the first folder matching pattern (e.g., RDKEMW-*)
+  candidates = [f for f in os.listdir('.') if os.path.isdir(f) and not f.startswith('.')]
+  if not candidates:
+    raise FileNotFoundError('No candidate results folders found.')
+  search_folder = sorted(candidates)[-1]
 
-# Find all subfolders (assumed to be timestamped) inside the branch folder
-subfolders = [f.path for f in os.scandir(branch_name) if f.is_dir()]
+# Find all subfolders (assumed to be timestamped) inside the search folder
+subfolders = [f.path for f in os.scandir(search_folder) if f.is_dir()]
 if not subfolders:
-  raise FileNotFoundError(f'No subfolders found in {branch_name}')
+  raise FileNotFoundError(f'No subfolders found in {search_folder}')
 
 # Pick the latest subfolder by name (assuming timestamp format)
 latest_subfolder = sorted(subfolders)[-1]
