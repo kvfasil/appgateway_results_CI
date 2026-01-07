@@ -1,4 +1,4 @@
-name: Generate Firebolt Schema Validation Result
+name: Generate Validation Report HTML
 
 on:
   workflow_run:
