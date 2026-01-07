@@ -118,46 +118,184 @@ def generate_comparison_report():
     new_tests_html = create_single_list_html(new_tests)
     removed_tests_html = create_single_list_html(removed_tests)
 
-    # --- 4. Load template and inject data ---
-    with open('comparison_report.html', 'r') as f:
-        template = f.read()
+    # --- 4. Generate final HTML from an embedded template ---
+    report_html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Comparison Report</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #f6f8fa;
+        }}
+        h1, h2 {{
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+        }}
+        h1 {{
+            font-size: 2em;
+        }}
+        h2 {{
+            font-size: 1.5em;
+            margin-top: 40px;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }}
+        th, td {{
+            border: 1px solid #dfe2e5;
+            padding: 10px 15px;
+            text-align: left;
+        }}
+        th {{
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }}
+        .status {{
+            font-weight: bold;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px 8px;
+            color: white;
+        }}
+        .status-passed {{
+            background-color: #28a745;
+        }}
+        .status-failed {{
+            background-color: #d73a49;
+        }}
+        .summary {{
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }}
+        .summary-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }}
+        .summary-item {{
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dfe2e5;
+        }}
+        .summary-item h3 {{
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }}
+        .summary-item p {{
+            margin: 0;
+            font-size: 2em;
+            font-weight: bold;
+        }}
+        .branch-info {{
+            margin-bottom: 20px;
+            font-style: italic;
+            color: #586069;
+        }}
+    </style>
+</head>
+<body>
+    <h1>Test Comparison Report</h1>
 
-    report_html = template.replace('<p id="current-branch-name">RDKEMW-xxxx (latest)</p>', f'<p id="current-branch-name">{os.path.basename(current_branch_folder)} (latest)</p>')
-    report_html = report_html.replace('<p id="base-branch-name">Release/ripple_3.3.0 (latest)</p>', f'<p id="base-branch-name">Release/ripple_3.3.0</p>')
-    
-    report_html = report_html.replace('<span id="regressions-count">2</span>', f'<span id="regressions-count">{len(regressions)}</span>')
-    report_html = report_html.replace('<span id="improvements-count">1</span>', f'<span id="improvements-count">{len(improvements)}</span>')
-    report_html = report_html.replace('<span id="new-tests-count">5</span>', f'<span id="new-tests-count">{len(new_tests)}</span>')
-    report_html = report_html.replace('<span id="removed-tests-count">3</span>', f'<span id="removed-tests-count">{len(removed_tests)}</span>')
+    <div class="branch-info">
+        <p><strong>Current:</strong> <span id="current-branch-name">{os.path.basename(current_branch_folder)} (latest)</span></p>
+        <p><strong>Base:</strong> <span id="base-branch-name">{base_result_dir}</span></p>
+    </div>
 
-    # Replace dummy table data
-    report_html = report_html.replace("""<!-- Dummy Data -->
-        <tr>
-          <td>test_case_005</td>
-          <td class="status status-passed">Passed</td>
-          <td class="status status-failed">Failed</td>
-        </tr>
-        <tr>
-          <td>test_case_012</td>
-          <td class="status status-passed">Passed</td>
-          <td class="status status-failed">Failed</td>
-        </tr>""", regressions_html)
-    report_html = report_html.replace("""<!-- Dummy Data -->
-        <tr>
-          <td>test_case_008</td>
-          <td class="status status-failed">Failed</td>
-          <td class="status status-passed">Passed</td>
-        </tr>""", improvements_html)
-    report_html = report_html.replace("""<!-- Dummy Data -->
-        <tr><td>test_case_101</td><td class="status status-passed">Passed</td></tr>
-        <tr><td>test_case_102</td><td class="status status-passed">Passed</td></tr>
-        <tr><td>test_case_103</td><td class="status status-failed">Failed</td></tr>
-        <tr><td>test_case_104</td><td class="status status-passed">Passed</td></tr>
-        <tr><td>test_case_105</td><td class="status status-passed">Passed</td></tr>""", new_tests_html)
-    report_html = report_html.replace("""<!-- Dummy Data -->
-        <tr><td>test_case_050</td><td class="status status-passed">Passed</td></tr>
-        <tr><td>test_case_051</td><td class="status status-passed">Passed</td></tr>
-        <tr><td>test_case_052</td><td class="status status-passed">Passed</td></tr>""", removed_tests_html)
+    <div class="summary">
+        <div class="summary-grid">
+            <div class="summary-item">
+                <h3>Regressions</h3>
+                <p><span id="regressions-count">{len(regressions)}</span></p>
+            </div>
+            <div class="summary-item">
+                <h3>Improvements</h3>
+                <p><span id="improvements-count">{len(improvements)}</span></p>
+            </div>
+            <div class="summary-item">
+                <h3>New Tests</h3>
+                <p><span id="new-tests-count">{len(new_tests)}</span></p>
+            </div>
+            <div class="summary-item">
+                <h3>Removed Tests</h3>
+                <p><span id="removed-tests-count">{len(removed_tests)}</span></p>
+            </div>
+        </div>
+    </div>
+
+    <h2>Regressions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Name</th>
+                <th>Base Status</th>
+                <th>Current Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {regressions_html}
+        </tbody>
+    </table>
+
+    <h2>Improvements</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Name</th>
+                <th>Base Status</th>
+                <th>Current Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {improvements_html}
+        </tbody>
+    </table>
+
+    <h2>New Tests</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {new_tests_html}
+        </tbody>
+    </table>
+
+    <h2>Removed Tests</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {removed_tests_html}
+        </tbody>
+    </table>
+
+</body>
+</html>
+"""
 
     # --- 5. Write final report ---
     with open('comparison_report.html', 'w') as f:
