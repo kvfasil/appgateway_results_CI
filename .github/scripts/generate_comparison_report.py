@@ -46,7 +46,11 @@ def generate_comparison_report():
     """Generates an HTML report comparing two test results."""
     
     # --- 1. Find the two JSON files to compare ---
-    base_result_file = 'Release/ripple_3.3.0/complete_firebolt_schema_validation_response.json'
+    base_result_dir = os.getenv('BASE_RESULT_DIR')
+    if not base_result_dir:
+        print("[ERROR] Environment variable 'BASE_RESULT_DIR' is not set.")
+        return
+    base_result_file = os.path.join(base_result_dir, 'complete_firebolt_schema_validation_response.json')
     current_branch_folder = get_current_branch_folder()
 
     print(f"[INFO] Using base reference file: {base_result_file}")
