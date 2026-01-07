@@ -37,27 +37,28 @@ jobs:
         env:
           RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
-          python3 .github/scripts/generate_firebolt_html.py
+          python3 .github/scripts/generate_fb_schema_validation_report.py
 
       - name: Generate SUMMARY.md with GitHub Pages link
         run: |
-          echo "# Firebolt Schema Validation Report" > SUMMARY.md
+          echo "# ${{ steps.get_branch.outputs.branch }} : Validation Report" > SUMMARY.md
           echo >> SUMMARY.md
+          echo "## Test Report" >> SUMMARY.md
           echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html" >> SUMMARY.md
           echo >> SUMMARY.md
-          echo "_This link points to the GitHub Pages deployment of the firebolt schema validation report for the current branch._" >> SUMMARY.md
 
       - name: Generate Comparison Report
         env:
           RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
           BASE_RESULT_DIR: 'Release/Ripple_3.3.0'
-        run: python3 .github/scripts/generate_comparison_report.py
+        run: python3 .github/scripts/generate_fb_schema_comparison_report.py
         working-directory: ${{ github.workspace }}
 
       - name: Update SUMMARY.md with Regression Report link
         run: |
           echo >> SUMMARY.md
-          echo "Regression Report: https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/comparison_report.html" >> SUMMARY.md
+          echo "## Regression Report" >> SUMMARY.md
+          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/comparison_report.html" >> SUMMARY.md
 
       - name: Commit SUMMARY.md to branch
         run: |

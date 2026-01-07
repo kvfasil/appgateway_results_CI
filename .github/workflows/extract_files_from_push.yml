@@ -1,4 +1,4 @@
-name: Jira Artifact Extract
+name: Extract Test Artifacts and Push to Branch
 
 on:
   push:
