@@ -47,6 +47,18 @@ jobs:
           echo >> SUMMARY.md
           echo "_This link points to the GitHub Pages deployment of the firebolt schema validation report for the current branch._" >> SUMMARY.md
 
+      - name: Generate Comparison Report
+        env:
+          RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
+          BASE_RESULT_DIR: 'Release/Ripple_3.3.0'
+        run: python3 .github/scripts/generate_comparison_report.py
+        working-directory: ${{ github.workspace }}
+
+      - name: Update SUMMARY.md with Regression Report link
+        run: |
+          echo >> SUMMARY.md
+          echo "Regression Report: https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ env.branch_name }}/comparison_report.html" >> SUMMARY.md
+
       - name: Commit SUMMARY.md to branch
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -59,7 +71,8 @@ jobs:
         run: |
           mkdir -p ghpages/${{ steps.get_branch.outputs.branch }}
           cp firebolt_schema_validation_result.html ghpages/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html
-
+          cp comparison_report.html ghpages/${{ steps.get_branch.outputs.branch }}/comparison_report.html
+          
       - name: Deploy to GitHub Pages for web view
         uses: peaceiris/actions-gh-pages@v4
         with:
