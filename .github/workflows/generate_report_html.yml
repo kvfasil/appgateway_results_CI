@@ -57,7 +57,7 @@ jobs:
       - name: Update SUMMARY.md with Regression Report link
         run: |
           echo >> SUMMARY.md
-          echo "Regression Report: https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ env.branch_name }}/comparison_report.html" >> SUMMARY.md
+          echo "Regression Report: https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/comparison_report.html" >> SUMMARY.md
 
       - name: Commit SUMMARY.md to branch
         run: |
