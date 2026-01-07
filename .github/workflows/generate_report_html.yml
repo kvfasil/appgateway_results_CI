@@ -2,7 +2,7 @@ name: Generate Validation Report HTML
 
 on:
   workflow_run:
-    workflows: ["Jira Artifact Extract"]
+    workflows: ["Extract Test Artifacts and Push to Branch"]
     types:
       - completed
 
@@ -37,7 +37,7 @@ jobs:
         env:
           RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
-          python3 .github/scripts/generate_fb_schema_validation_report.py
+          python3 .github/scripts/generate_fb_schema_test_report.py
 
       - name: Generate SUMMARY.md with GitHub Pages link
         run: |
