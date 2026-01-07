@@ -700,11 +700,10 @@ def generate_comparison_report():
     </html>
     """
     
-    report_path = os.path.join(current_branch_folder, "comparison_report.html")
-    with open(report_path, 'w') as f:
+    with open("comparison_report.html", 'w') as f:
         f.write(html_content)
     
-    print(f"[SUCCESS] Generated comparison report: {report_path}")
+    print(f"[SUCCESS] Generated comparison report: comparison_report.html")
 
 if __name__ == "__main__":
     generate_comparison_report()
