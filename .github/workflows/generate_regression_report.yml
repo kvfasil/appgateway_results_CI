@@ -32,44 +32,7 @@ jobs:
         run: |
           git fetch origin ${{ steps.get_branch.outputs.branch }}
           git checkout ${{ steps.get_branch.outputs.branch }}
-
-      - name: Generate Comparison Report
-        env:
-          RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
-        run: |
-          python3 .github/scripts/generate_comparison_report.py
-
-      - name: Generate SUMMARY.md with GitHub Pages link
-        run: |
-          echo >> SUMMARY.md
-          echo >> SUMMARY.md
-          echo "Regression Report : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/comparison_report.html" >> SUMMARY.md
-          echo >> SUMMARY.md
           
-      - name: Commit SUMMARY.md to branch
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add SUMMARY.md
-          git commit -m "Add SUMMARY.md with GitHub Pages link" || echo "No changes to commit"
-          git push origin HEAD:${{ steps.get_branch.outputs.branch }}
-
-      - name: Copy HTML to publish directory
-        run: |
-          mkdir -p ghpages/${{ steps.get_branch.outputs.branch }}
-          cp comparison_report.html ghpages/${{ steps.get_branch.outputs.branch }}/comparison_report.html
-
-      - name: Deploy to GitHub Pages for web view
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ghpages
-          publish_branch: gh-pages
-          keep_files: true
-          user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
-          cname: ''
-
       - name: Generate Comparison Report
         env:
           BASE_RESULT_DIR: 'Release/Ripple_3.3.0'
