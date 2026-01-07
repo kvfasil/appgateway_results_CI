@@ -458,6 +458,7 @@ def generate_comparison_report():
                 headers.forEach(h => {{
                     h.addEventListener('click', () => toggleSection(h.dataset.target));
                 }});
+                // Keep all sections collapsed by default
             }});
         </script>
     </body>
