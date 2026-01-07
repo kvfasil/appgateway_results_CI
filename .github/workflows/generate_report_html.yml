@@ -5,6 +5,13 @@ on:
     workflows: ["Extract Test Artifacts and Push to Branch"]
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Target branch to generate reports for"
+        required: true
+        type: string
+        default: main
 
 permissions:
   contents: write
@@ -23,33 +30,37 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Get branch name from triggering workflow
-        id: get_branch
+      - name: Resolve target branch
+        id: resolve_branch
         run: |
-          echo "::set-output name=branch::${{ github.event.workflow_run.head_branch }}"
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Checkout correct branch
         run: |
-          git fetch origin ${{ steps.get_branch.outputs.branch }}
-          git checkout ${{ steps.get_branch.outputs.branch }}
+          git fetch origin ${{ steps.resolve_branch.outputs.branch }}
+          git checkout ${{ steps.resolve_branch.outputs.branch }}
 
       - name: Generate HTML from JSON
         env:
-          RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
+          RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
         run: |
           python3 .github/scripts/generate_fb_schema_test_report.py
 
       - name: Generate SUMMARY.md with GitHub Pages link
         run: |
-          echo "# ${{ steps.get_branch.outputs.branch }} : Validation Report" > SUMMARY.md
+          echo "# ${{ steps.resolve_branch.outputs.branch }} : Validation Report" > SUMMARY.md
           echo >> SUMMARY.md
           echo "## Test Report" >> SUMMARY.md
-          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html" >> SUMMARY.md
+          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/firebolt_schema_validation_result.html" >> SUMMARY.md
           echo >> SUMMARY.md
 
       - name: Generate Comparison Report
         env:
-          RESULT_BRANCH: ${{ steps.get_branch.outputs.branch }}
+          RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
           BASE_RESULT_DIR: 'Release/Ripple_3.3.0'
         run: python3 .github/scripts/generate_fb_schema_comparison_report.py
         working-directory: ${{ github.workspace }}
@@ -58,7 +69,7 @@ jobs:
         run: |
           echo >> SUMMARY.md
           echo "## Regression Report" >> SUMMARY.md
-          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.get_branch.outputs.branch }}/comparison_report.html" >> SUMMARY.md
+          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/comparison_report.html" >> SUMMARY.md
 
       - name: Commit SUMMARY.md to branch
         run: |
@@ -66,13 +77,13 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add SUMMARY.md
           git commit -m "Add SUMMARY.md with GitHub Pages link" || echo "No changes to commit"
-          git push origin HEAD:${{ steps.get_branch.outputs.branch }}
+          git push origin HEAD:${{ steps.resolve_branch.outputs.branch }}
 
       - name: Copy HTML to publish directory
         run: |
-          mkdir -p ghpages/${{ steps.get_branch.outputs.branch }}
-          cp firebolt_schema_validation_result.html ghpages/${{ steps.get_branch.outputs.branch }}/firebolt_schema_validation_result.html
-          cp comparison_report.html ghpages/${{ steps.get_branch.outputs.branch }}/comparison_report.html
+          mkdir -p ghpages/${{ steps.resolve_branch.outputs.branch }}
+          cp firebolt_schema_validation_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/firebolt_schema_validation_result.html
+          cp comparison_report.html ghpages/${{ steps.resolve_branch.outputs.branch }}/comparison_report.html
           
       - name: Deploy to GitHub Pages for web view
         uses: peaceiris/actions-gh-pages@v4
