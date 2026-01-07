@@ -123,6 +123,7 @@ def generate_comparison_report():
 
         details_html = f"""
         <div class="details" id="details-{test_id}">
+            <div style=\"font-size:12px;color:#6b7b8c;margin:8px 20px;\"><b>Test ID:</b> {test_id}</div>
             <div class="details-content">
                 <div class="column">
                     <h4>Request</h4>
@@ -140,7 +141,7 @@ def generate_comparison_report():
         
         row_html = f"""
         <tr class="test-row" onclick="toggleDetails('{test_id}')">
-            <td>{test_name}</td>
+            <td><span class=\"idtag\">{test_id}</span>{test_name}</td>
             <td class='status'>{base_status}</td>
             <td class='status {status_class}'>{current_status}</td>
         </tr>
@@ -163,6 +164,7 @@ def generate_comparison_report():
 
         details_html = f"""
         <div class="details" id="details-{test_id}">
+            <div style=\"font-size:12px;color:#6b7b8c;margin:8px 20px;\"><b>Test ID:</b> {test_id}</div>
             <div class="details-content">
                 <div class="column">
                     <h4>Request</h4>
@@ -180,7 +182,7 @@ def generate_comparison_report():
         
         row_html = f"""
         <tr class="test-row" onclick="toggleDetails('{test_id}')">
-            <td>{test_name}</td>
+            <td><span class=\"idtag\">{test_id}</span>{test_name}</td>
             <td class='status {status_class}'>{current_status}</td>
         </tr>
         <tr>
@@ -330,6 +332,16 @@ def generate_comparison_report():
                 display: flex;
                 padding: 20px;
                 border-top: 2px solid #eef2f5;
+            }}
+            .idtag {{
+                display: inline-block;
+                font-size: 12px;
+                padding: 2px 6px;
+                border-radius: 6px;
+                background: #eef1f4;
+                color: #6b7b8c;
+                margin-right: 8px;
+                border: 1px solid #e3e8ee;
             }}
             .column {{
                 flex: 1;
