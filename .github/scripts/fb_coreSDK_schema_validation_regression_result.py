@@ -21,7 +21,7 @@ def find_latest_result_file(base_folder):
     print(f"[INFO] Using latest subfolder: {latest_subfolder}")
 
     # Find the JSON file
-    result_file = os.path.join(latest_subfolder, 'complete_firebolt_schema_validation_response.json')
+    result_file = os.path.join(latest_subfolder, 'fb_coreSDK_schema_validation_response.json')
     if not os.path.isfile(result_file):
         print(f"[ERROR] Result JSON not found in {latest_subfolder}")
         return None
@@ -50,7 +50,8 @@ def generate_comparison_report():
     if not base_result_dir:
         print("[ERROR] Environment variable 'BASE_RESULT_DIR' is not set.")
         return
-    base_result_file = os.path.join(base_result_dir, 'complete_firebolt_schema_validation_response.json')
+    #TODO: Update to fb_coreSDK once available
+    base_result_file = os.path.join(base_result_dir, 'fb_coreSDK_schema_validation_response.json')
     
     # Use CURRENT_BRANCH_DIR if set, otherwise fall back to git branch
     current_branch_folder = os.getenv('CURRENT_BRANCH_DIR')
