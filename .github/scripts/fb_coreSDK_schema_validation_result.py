@@ -404,7 +404,7 @@ def generate_test_report():
     </html>
     """
 
-    out_path = os.path.join(os.getcwd(), 'firebolt_schema_validation_result.html')
+    out_path = os.path.join(os.getcwd(), 'fb_coreSDK_schema_validation_result.html')
     with open(out_path, 'w') as f:
         f.write(html)
     print(f"[SUCCESS] Generated test report: {out_path}")
