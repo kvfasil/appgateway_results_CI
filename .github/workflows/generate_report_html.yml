@@ -55,7 +55,7 @@ jobs:
           echo "# ${{ steps.resolve_branch.outputs.branch }} : Validation Report" > SUMMARY.md
           echo >> SUMMARY.md
           echo "## Test Report" >> SUMMARY.md
-          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/firebolt_schema_validation_result.html" >> SUMMARY.md
+          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_result.html" >> SUMMARY.md
           echo >> SUMMARY.md
 
       - name: Generate Comparison Report
@@ -82,7 +82,7 @@ jobs:
       - name: Copy HTML to publish directory
         run: |
           mkdir -p ghpages/${{ steps.resolve_branch.outputs.branch }}
-          cp firebolt_schema_validation_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/firebolt_schema_validation_result.html
+          cp fb_coreSDK_schema_validation_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_result.html
           cp fb_coreSDK_schema_validation_regression_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_regression_result.html
           
       - name: Deploy to GitHub Pages for web view
