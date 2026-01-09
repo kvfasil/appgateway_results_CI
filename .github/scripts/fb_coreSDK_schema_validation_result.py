@@ -13,14 +13,14 @@ def find_latest_result_file(base_folder: str):
   if subfolders:
     latest_subfolder = max(subfolders, key=os.path.getmtime)
     print(f"[INFO] Using latest subfolder: {latest_subfolder}")
-    result_file = os.path.join(latest_subfolder, 'complete_firebolt_schema_validation_response.json')
+    result_file = os.path.join(latest_subfolder, 'fb_coreSDK_schema_validation_response.json')
     if os.path.isfile(result_file):
       print(f"[INFO] Found result file: {result_file}")
       return result_file, latest_subfolder
     else:
       print(f"[WARN] Result JSON not found in {latest_subfolder}")
   # Fallback: JSON directly inside base_folder
-  direct_json = os.path.join(base_folder, 'complete_firebolt_schema_validation_response.json')
+  direct_json = os.path.join(base_folder, 'fb_coreSDK_schema_validation_response.json')
   if os.path.isfile(direct_json):
     print(f"[INFO] Found direct result file: {direct_json}")
     return direct_json, base_folder
@@ -179,7 +179,7 @@ def generate_test_report():
       <script>
         const data = {json.dumps(data)};
         // Category extraction
-        const categories = Array.from(new Set(data.test_results.map(t => (t.test_id||'').split(/\d/)[0])));
+        const categories = Array.from(new Set(data.test_results.map(t => (t.test_id||'').split(/\\d/)[0])));
         let selectedCategory = 'All';
         let currentSearch = '';
         let currentSort = 'status';
@@ -207,7 +207,7 @@ def generate_test_report():
           tbody.innerHTML = '';
           const allCats = categories;
           allCats.forEach(cat => {{
-            const catTests = data.test_results.filter(t => (t.test_id||'').split(/\d/)[0] === cat);
+            const catTests = data.test_results.filter(t => (t.test_id||'').split(/\\d/)[0] === cat);
             const total = catTests.length;
             const passed = catTests.filter(t => t.status === 'Passed' || t.status === 'Success').length;
             const failed = catTests.filter(t => t.status === 'Failed').length;
@@ -250,7 +250,7 @@ def generate_test_report():
           testList.innerHTML = '';
           let filtered = data.test_results;
           if (selectedCategory !== 'All') {{
-            filtered = filtered.filter(t => (t.test_id||'').split(/\d/)[0] === selectedCategory);
+            filtered = filtered.filter(t => (t.test_id||'').split(/\\d/)[0] === selectedCategory);
           }}
           if (status === 'Passed') {{
             filtered = filtered.filter(t => t.status === 'Passed' || t.status === 'Success');
@@ -293,6 +293,50 @@ def generate_test_report():
                 const req = step.request ? JSON.stringify(step.request, null, 2) : '';
                 const res = step.response ? JSON.stringify(step.response, null, 2) : '';
                 const err = step.error ? `${'{'}step.error{'}'}` : '';
+                
+                // Generate example when test failed
+                let exampleSection = '';
+                if (test.status === 'Failed' && step.error) {{
+                  const exampleRequest = step.request ? JSON.stringify(step.request, null, 2) : 
+                    `{{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "Device.version",
+  "params": {{}}
+}}`;
+                  const exampleResponse = `{{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": {{
+    "sdk": {{
+      "version": "1.0.0",
+      "majorVersion": 1,
+      "minorVersion": 0,
+      "patch": 0,
+      "readable": "Firebolt JS SDK v1.0.0"
+    }},
+    "api": {{
+      "version": "1.0.0",
+      "majorVersion": 1,
+      "minorVersion": 0,
+      "patch": 0,
+      "readable": "Firebolt API v1.0.0"
+    }}
+  }}
+}}`;
+                  exampleSection = `<h4 style='color:#28a745;'>✨ Expected Example</h4>
+                    <div class='detail-grid' style='margin-bottom:10px;'>
+                      <div class='col'>
+                        <h5>Example Request</h5>
+                        <pre style='background:#eaf7ef;border:1px solid #28a745;'>${'{'}exampleRequest{'}'}</pre>
+                      </div>
+                      <div class='col'>
+                        <h5>Example Response</h5>
+                        <pre style='background:#eaf7ef;border:1px solid #28a745;'>${'{'}exampleResponse{'}'}</pre>
+                      </div>
+                    </div>`;
+                }}
+                
                 detailsDiv.innerHTML += `<div style='margin-bottom:12px;'>
                   <div><b>Step:</b> ${'{'}step.description || step.step_id || ''{'}'}</div>
                   <div class='detail-grid'>
@@ -303,9 +347,10 @@ def generate_test_report():
                     <div class='col'>
                       <h4>Response <span class='link' onclick="copyText(this)">Copy</span></h4>
                       <pre>${'{'}res{'}'}</pre>
-                      ${'{'}err ? `<h4 style='color:#dc3545;'>Error</h4><pre style='background:#fdecef;color:#842029;'>${'{'}err{'}'}</pre>` : ''{'}'}
+                      ${'{'}err ? `<h4 style='color:#dc3545;'>❌ Error Details</h4><pre style='background:#fdecef;color:#842029;border:1px solid #dc3545;'>${'{'}err{'}'}</pre>` : ''{'}'}
                     </div>
                   </div>
+                  ${'{'}exampleSection{'}'}
                 </div>`;
               }});
             }}

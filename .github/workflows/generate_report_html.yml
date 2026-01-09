@@ -48,7 +48,7 @@ jobs:
         env:
           RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
         run: |
-          python3 .github/scripts/generate_fb_schema_test_report.py
+          python3 .github/scripts/fb_coreSDK_schema_validation_result.py
 
       - name: Generate SUMMARY.md with GitHub Pages link
         run: |
@@ -62,7 +62,7 @@ jobs:
         env:
           RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
           BASE_RESULT_DIR: 'Release/Ripple_3.3.0'
-        run: python3 .github/scripts/generate_fb_schema_comparison_report.py
+        run: python3 .github/scripts/fb_coreSDK_schema_validation_regression_result.py
         working-directory: ${{ github.workspace }}
 
       - name: Update SUMMARY.md with Regression Report link
