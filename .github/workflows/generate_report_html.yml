@@ -69,7 +69,7 @@ jobs:
         run: |
           echo >> SUMMARY.md
           echo "## Regression Report" >> SUMMARY.md
-          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/comparison_report.html" >> SUMMARY.md
+          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_regression_result.html" >> SUMMARY.md
 
       - name: Commit SUMMARY.md to branch
         run: |
@@ -83,7 +83,7 @@ jobs:
         run: |
           mkdir -p ghpages/${{ steps.resolve_branch.outputs.branch }}
           cp firebolt_schema_validation_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/firebolt_schema_validation_result.html
-          cp comparison_report.html ghpages/${{ steps.resolve_branch.outputs.branch }}/comparison_report.html
+          cp fb_coreSDK_schema_validation_regression_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_regression_result.html
           
       - name: Deploy to GitHub Pages for web view
         uses: peaceiris/actions-gh-pages@v4

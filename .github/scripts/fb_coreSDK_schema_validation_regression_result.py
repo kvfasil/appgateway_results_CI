@@ -712,10 +712,10 @@ def generate_comparison_report():
     </html>
     """
     
-    with open("comparison_report.html", 'w') as f:
+    with open("fb_coreSDK_schema_validation_regression_result.html", 'w') as f:
         f.write(html_content)
     
-    print(f"[SUCCESS] Generated comparison report: comparison_report.html")
+    print(f"[SUCCESS] Generated comparison report: fb_coreSDK_schema_validation_regression_result.html")
 
 if __name__ == "__main__":
     generate_comparison_report()
