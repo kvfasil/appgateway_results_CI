@@ -19,6 +19,7 @@ permissions:
 jobs:
   generate-html:
     runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,54 +45,59 @@ jobs:
           git fetch origin ${{ steps.resolve_branch.outputs.branch }}
           git checkout ${{ steps.resolve_branch.outputs.branch }}
 
+      - name: Resolve RESULT_DIR
+        id: resolve_result_dir
+        shell: bash
+        run: |
+          if [ -f "env_varables.txt" ]; then
+            RESULT_DIR=$(grep 'RESULT_DIR=' env_varables.txt | cut -d '=' -f2-)
+            PROPOSITION=$(grep 'PROPOSITION=' env_varables.txt | cut -d '=' -f2-)
+            echo "result_dir=$RESULT_DIR" >> $GITHUB_OUTPUT
+            echo "proposition=$PROPOSITION" >> $GITHUB_OUTPUT
+          else
+            echo "env_varables.txt file not found!"
+            exit 1
+          fi
+
       - name: Generate HTML from JSON
         env:
           RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
+          RESULT_DIR: ${{ steps.resolve_result_dir.outputs.result_dir }}
+          PROPOSITION: ${{ steps.resolve_result_dir.outputs.proposition }}
         run: |
+          echo "RESULT_BRANCH=${RESULT_BRANCH}"
+          echo "PROPOSITION=${PROPOSITION}"
+          echo "RESULT_DIR=${RESULT_DIR}"
+          ls -la "${RESULT_DIR}" || true
           python3 .github/scripts/fb_coreSDK_schema_validation_result.py
 
-      - name: Generate SUMMARY.md with GitHub Pages link
+      - name: Validate generated HTML
         run: |
-          echo "# ${{ steps.resolve_branch.outputs.branch }} : Validation Report" > SUMMARY.md
-          echo >> SUMMARY.md
-          echo "## Test Report" >> SUMMARY.md
-          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_result.html" >> SUMMARY.md
-          echo >> SUMMARY.md
+          if [ ! -f "CoreSanity_SchemaValidation_result_report.html" ]; then
+            echo "HTML report generation failed"
+            exit 1
+          fi
 
-      - name: Generate Comparison Report
-        env:
-          RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
-          BASE_RESULT_DIR: 'Release/Ripple_3.3.0'
-        run: python3 .github/scripts/fb_coreSDK_schema_validation_regression_result.py
-        working-directory: ${{ github.workspace }}
-
-      - name: Update SUMMARY.md with Regression Report link
+      - name: Deploy to GitHub Pages
         run: |
-          echo >> SUMMARY.md
-          echo "## Regression Report" >> SUMMARY.md
-          echo "firebolt schema validation : https://${{ github.repository_owner }}.github.io/appgateway_results_CI/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_regression_result.html" >> SUMMARY.md
-
-      - name: Commit SUMMARY.md to branch
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add SUMMARY.md
-          git commit -m "Add SUMMARY.md with GitHub Pages link" || echo "No changes to commit"
-          git push origin HEAD:${{ steps.resolve_branch.outputs.branch }}
-
-      - name: Copy HTML to publish directory
-        run: |
-          mkdir -p ghpages/${{ steps.resolve_branch.outputs.branch }}
-          cp fb_coreSDK_schema_validation_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_result.html
-          cp fb_coreSDK_schema_validation_regression_result.html ghpages/${{ steps.resolve_branch.outputs.branch }}/fb_coreSDK_schema_validation_regression_result.html
+          # Save the generated files
+          cp CoreSanity_SchemaValidation_result_report.html /tmp/report.html
+          cp version.txt /tmp/version.txt 2>/dev/null || echo "No version.txt"
           
-      - name: Deploy to GitHub Pages for web view
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ghpages
-          publish_branch: gh-pages
-          keep_files: true
-          user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
-          cname: ''
+          # Checkout gh-pages branch
+          git fetch origin gh-pages
+          git checkout gh-pages
+          
+          # Create target directory and copy files
+          mkdir -p ${{ steps.resolve_result_dir.outputs.result_dir }}
+          cp /tmp/report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/CoreSanity_SchemaValidation_result_report.html
+          if [ -f /tmp/version.txt ]; then
+            cp /tmp/version.txt ${{ steps.resolve_result_dir.outputs.result_dir }}/version.txt
+          fi
+                    
+          # Configure git and commit
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add ${{ steps.resolve_result_dir.outputs.result_dir }}/ .github/
+          git commit -m "deploy: ${{ github.sha }}" || echo "No changes to commit"
+          git push origin gh-pages

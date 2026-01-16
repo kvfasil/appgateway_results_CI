@@ -5,7 +5,7 @@ on:
     paths:
       - 'artifacts/*.tar.gz'
     branches:
-      - '**'   # trigger on ALL branches (Jira branches)
+      - 'RDKEMW*'   # trigger on ALL branches (Jira branches)
 
 permissions:
   contents: write
@@ -13,6 +13,10 @@ permissions:
 jobs:
   extract-and-push:
     runs-on: ubuntu-latest
+    # Skip if the push was made by github-actions[bot] to prevent infinite loops
+    if: github.actor != 'github-actions[bot]'
+    outputs:
+      RESULT_DIR: ${{ steps.set_outputs.outputs.RESULT_DIR }}
 
     steps:
     - name: Checkout repository
@@ -20,39 +24,34 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Extract artifact and push extracted files to Jira branch
+    - name: Extract artifact and push results to branch
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       env:
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        set -e
+        set -euo pipefail  # Add at start of script blocks
 
         # --------------------------------------------------
-        # Jira branch = branch name (artifact already uploaded here)
+        # Determine branch name for push event
         # --------------------------------------------------
-        JIRA_NUMBER="${GITHUB_REF_NAME}"
+        BRANCH="${GITHUB_REF_NAME}"
 
-        if [ -z "$JIRA_NUMBER" ]; then
-          echo "[ERROR] Could not determine Jira branch name"
+        if [ -z "$BRANCH" ]; then
+          echo "[ERROR] Could not determine branch name"
           exit 1
         fi
 
-        echo "[INFO] Jira branch detected: $JIRA_NUMBER"
-        # --------------------------------------------------
-        # Generate timestamp folder
-        # --------------------------------------------------
-        TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-        echo "[INFO] Timestamp: $TIMESTAMP"
+        echo "[INFO] Branch detected: $BRANCH"
 
         # --------------------------------------------------
-        # Extract latest artifact from THIS branch
+        # Locate and extract latest artifact tarball in repo
         # --------------------------------------------------
         mkdir -p extracted
-        LATEST_ARTIFACT=$(ls artifacts/*.tar.gz | sort | tail -n1)
+        LATEST_ARTIFACT=$(ls artifacts/*.tar.gz 2>/dev/null | sort | tail -n1)
 
         if [ -z "$LATEST_ARTIFACT" ]; then
-          echo "ERROR: No artifact found in branch $JIRA_NUMBER"
+          echo "[ERROR]: No artifact tarball found under artifacts/"
           exit 1
         fi
 
@@ -60,21 +59,84 @@ jobs:
         tar -xzf "$LATEST_ARTIFACT" -C extracted
 
         # --------------------------------------------------
-        # Prepare Jira/timestamp directory
+        # Generate timestamp from artifact filename (fallback to now)
+        # Expected format: results_YYYYMMDD_HHMMSS.tar.gz
         # --------------------------------------------------
-        FINAL_DIR="$JIRA_NUMBER/$TIMESTAMP"
-        mkdir -p "$FINAL_DIR"
-        cp -r extracted/* "$FINAL_DIR/"
+        ARTIFACT_BASENAME=$(basename "$LATEST_ARTIFACT")
+        if [[ "$ARTIFACT_BASENAME" =~ ^results_([0-9]{8}_[0-9]{6})\.tar\.gz$ ]]; then
+          TIMESTAMP="${BASH_REMATCH[1]}"
+        else
+          TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+          echo "[WARN] Could not parse timestamp from $ARTIFACT_BASENAME; using current time"
+        fi
+        echo "[INFO] Timestamp: $TIMESTAMP"
 
-        echo "[INFO] Prepared directory: $FINAL_DIR"
+        # --------------------------------------------------
+        # Resolve proposition from version.txt within extracted artifact
+        # --------------------------------------------------
+        PROPOSITION="unknown"
+        VERSION_FILE=$(find extracted -type f -name 'version.txt' | head -n1 || true)
+        if [ -n "${VERSION_FILE:-}" ] && [ -f "$VERSION_FILE" ]; then
+          echo "[INFO] Found version file at: $VERSION_FILE"
+          IMAGE_LINE=$(grep -i "^imagename" "$VERSION_FILE" || true)
+          if [ -n "$IMAGE_LINE" ]; then
+            IMAGE_VAL=$(echo "$IMAGE_LINE" | cut -d':' -f2- | xargs)
+            if echo "$IMAGE_VAL" | grep -q '_' ; then
+              PROPOSITION=$(echo "$IMAGE_VAL" | cut -d'_' -f1)
+            else
+              PROPOSITION="unknown"
+            fi
+          fi
+        else
+          echo "[INFO] version.txt not found in extracted artifacts; using proposition=unknown"
+        fi
+
+        echo "[INFO] Proposition resolved as: $PROPOSITION"
 
         # --------------------------------------------------
-        # Push extracted files BACK to SAME Jira branch using git
+        # Prepare output directories per requested structure
         # --------------------------------------------------
-        echo "[INFO] Adding files to git for branch $JIRA_NUMBER"
+        RESULT_DIR="pr-test/$BRANCH/$PROPOSITION/"
+        TARGET_DIR="pr-test/$BRANCH/$PROPOSITION/$TIMESTAMP"
+        TEST_ARTIFACTS_DIR="pr-test/$BRANCH/$PROPOSITION/artifacts"
+        mkdir -p "$RESULT_DIR" "$TEST_ARTIFACTS_DIR" "$TARGET_DIR"
+        cp -r extracted/* "$TARGET_DIR/"
+        cp extracted/version.txt .
+
+        # Move root artifacts tarballs into pr-test/<branch>/<proposition>/artifacts/
+        if ls artifacts/*.tar.gz >/dev/null 2>&1; then
+          echo "[INFO] Moving root artifacts/*.tar.gz into $TEST_ARTIFACTS_DIR"
+          mv artifacts/*.tar.gz "$TEST_ARTIFACTS_DIR/"
+          rm -f artifacts/*.tar.gz
+        else
+          echo "[INFO] No tarballs found to move from root artifacts/"
+        fi
+
+        echo "[INFO] Prepared directories: $RESULT_DIR and $TEST_ARTIFACTS_DIR (accumulating all artifacts without timestamp)"
+
+        # Export RESULT_DIR to GITHUB_ENV so subsequent steps can access it
+        echo "RESULT_DIR=$RESULT_DIR" >> "$GITHUB_ENV"
+        echo "PROPOSITION=$PROPOSITION" >> "$GITHUB_ENV"
+
+        # Remove existing env_varables.txt if present
+        # Remove when PR is merged.
+        if [ -f env_varables.txt ]; then
+          rm env_varables.txt || true
+        fi
+
+        echo "RESULT_DIR=$RESULT_DIR" >> "env_varables.txt"
+        echo "PROPOSITION=$PROPOSITION" >> "env_varables.txt"
+        
+        # --------------------------------------------------
+        # Push results back to same PR branch using git
+        # --------------------------------------------------
+        echo "[INFO] Adding files to git for branch $BRANCH"
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add "$FINAL_DIR"
-        git commit -m "Add extracted files for $JIRA_NUMBER at $TIMESTAMP" || echo "[INFO] No changes to commit"
-        git push origin HEAD:"$JIRA_NUMBER"
-        echo "✅ Extracted files pushed to branch $JIRA_NUMBER under $TIMESTAMP using git"
+        git add "$RESULT_DIR" "$TEST_ARTIFACTS_DIR" artifacts/ env_varables.txt version.txt
+        if git commit -m "Add extracted artifacts for $BRANCH proposition=$PROPOSITION at $TIMESTAMP"; then
+          git push origin HEAD:"$BRANCH"
+          echo "✅ Extracted files pushed to branch $BRANCH under $RESULT_DIR and updated $TEST_ARTIFACTS_DIR using git"
+        else
+          echo "[INFO] No changes to commit; skipping push"
+        fi

@@ -10,17 +10,19 @@ def find_latest_result_file(base_folder: str):
     return None, None
   # Try timestamped subfolders first
   subfolders = [f.path for f in os.scandir(base_folder) if f.is_dir()]
+  # Exclude the aggregation folder named 'artifacts' from consideration
+  subfolders = [p for p in subfolders if os.path.basename(p) != 'artifacts']
   if subfolders:
     latest_subfolder = max(subfolders, key=os.path.getmtime)
     print(f"[INFO] Using latest subfolder: {latest_subfolder}")
-    result_file = os.path.join(latest_subfolder, 'fb_coreSDK_schema_validation_response.json')
+    result_file = os.path.join(latest_subfolder, 'CoreSanity_SchemaValidation_response.json')
     if os.path.isfile(result_file):
       print(f"[INFO] Found result file: {result_file}")
       return result_file, latest_subfolder
     else:
       print(f"[WARN] Result JSON not found in {latest_subfolder}")
   # Fallback: JSON directly inside base_folder
-  direct_json = os.path.join(base_folder, 'fb_coreSDK_schema_validation_response.json')
+  direct_json = os.path.join(base_folder, 'CoreSanity_SchemaValidation_response.json')
   if os.path.isfile(direct_json):
     print(f"[INFO] Found direct result file: {direct_json}")
     return direct_json, base_folder
@@ -40,20 +42,21 @@ def get_current_branch_folder():
 def generate_test_report():
     # Prefer explicit RESULT_BRANCH when provided (CI manual dispatch or workflow)
     branch_folder = os.getenv('RESULT_BRANCH')
-    if branch_folder:
-        print(f"[INFO] Using RESULT_BRANCH env var: {branch_folder}")
-    else:
-        branch_folder = get_current_branch_folder()
+    print(f"[INFO] Using RESULT_BRANCH env var: {branch_folder}")
 
-    result_file, latest_subfolder = find_latest_result_file(branch_folder)
-    if not result_file:
-      # Try BASE_RESULT_DIR as a fallback
-      base_result_dir = os.getenv('BASE_RESULT_DIR')
-      if base_result_dir:
-        print(f"[INFO] Falling back to BASE_RESULT_DIR: {base_result_dir}")
-        result_file, latest_subfolder = find_latest_result_file(base_result_dir)
+    # Initialize result variables
+    result_file = None
+    latest_subfolder = None
+
+    # Try RESULT_DIR as a primary source
+    if True:
+      result_dir = os.getenv('RESULT_DIR')
+      if result_dir:
+        print(f"[INFO] Loading files from RESULT_DIR: {result_dir}")
+        result_file, latest_subfolder = find_latest_result_file(result_dir)
       if not result_file:
         print("[ERROR] Cannot generate test report. Result JSON is missing.")
+        print("[ERROR] RESULT_DIR is empty Aborting report generation.")
         return
 
     with open(result_file) as f:
@@ -110,7 +113,7 @@ def generate_test_report():
         .detail-grid{{ display:flex; gap:12px; flex-wrap:wrap; }}
         .col{{ flex:1 1 380px; }}
         h4{{ margin:8px 0 6px 0; font-size:13px; color:#44566c; }}
-        pre{{ background:#eef2f5; padding:10px; border-radius:6px; overflow:auto; font-size:12px; }}
+        pre{{ background:#eef2f5; padding:10px; border-radius:6px; overflow:auto; font-size:12px; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }}
         table {{ width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px #0001; margin-bottom: 16px; }}
         th, td {{ padding:10px; text-align:center; }}
         thead {{ background:#1976d2;color:#fff; }}
@@ -204,14 +207,24 @@ def generate_test_report():
         // Category summary table
         function renderCategorySummaryTable() {{
           const tbody = document.getElementById('categorySummaryBody');
+          const tfoot = document.getElementById('categorySummaryFoot');
           tbody.innerHTML = '';
+          tfoot.innerHTML = '';
           const allCats = categories;
+          let grandTotal = 0, grandPassed = 0, grandFailed = 0, grandSkipped = 0;
+          
           allCats.forEach(cat => {{
             const catTests = data.test_results.filter(t => (t.test_id||'').split(/\\d/)[0] === cat);
             const total = catTests.length;
             const passed = catTests.filter(t => t.status === 'Passed' || t.status === 'Success').length;
             const failed = catTests.filter(t => t.status === 'Failed').length;
             const skipped = catTests.filter(t => t.status === 'Skipped').length;
+            
+            grandTotal += total;
+            grandPassed += passed;
+            grandFailed += failed;
+            grandSkipped += skipped;
+            
             const tr = document.createElement('tr');
             tr.innerHTML = `<td class='link' onclick="filterCategory('${'{'}cat{'}'}')">${'{'}cat{'}'}</td>
                             <td>${'{'}total{'}'}</td>
@@ -220,6 +233,15 @@ def generate_test_report():
                             <td style='color:#6c757d;'>${'{'}skipped{'}'}</td>`;
             tbody.appendChild(tr);
           }});
+          
+          // Add total row in footer
+          const totalTr = document.createElement('tr');
+          totalTr.innerHTML = `<td style='font-weight:bold;background:#f8f9fa;'><b>Total</b></td>
+                              <td style='font-weight:bold;background:#f8f9fa;'><b>${'{'}grandTotal{'}'}</b></td>
+                              <td style='font-weight:bold;background:#f8f9fa;color:#28a745;'><b>${'{'}grandPassed{'}'}</b></td>
+                              <td style='font-weight:bold;background:#f8f9fa;color:#dc3545;'><b>${'{'}grandFailed{'}'}</b></td>
+                              <td style='font-weight:bold;background:#f8f9fa;color:#6c757d;'><b>${'{'}grandSkipped{'}'}</b></td>`;
+          tfoot.appendChild(totalTr);
         }}
 
         window.filterCategory = function(cat) {{
@@ -304,26 +326,9 @@ def generate_test_report():
   "method": "Device.version",
   "params": {{}}
 }}`;
-                  const exampleResponse = `{{
-  "jsonrpc": "2.0",
-  "id": "1",
-  "result": {{
-    "sdk": {{
-      "version": "1.0.0",
-      "majorVersion": 1,
-      "minorVersion": 0,
-      "patch": 0,
-      "readable": "Firebolt JS SDK v1.0.0"
-    }},
-    "api": {{
-      "version": "1.0.0",
-      "majorVersion": 1,
-      "minorVersion": 0,
-      "patch": 0,
-      "readable": "Firebolt API v1.0.0"
-    }}
-  }}
-}}`;
+                  const exampleResponse = (step.examples && step.examples.length > 0 && step.examples[0].expected_result !== undefined)
+                    ? JSON.stringify(step.examples[0].expected_result, null, 2)
+                    : (res || '');
                   exampleSection = `<h4 style='color:#28a745;'>✨ Expected Example</h4>
                     <div class='detail-grid' style='margin-bottom:10px;'>
                       <div class='col'>
@@ -404,7 +409,7 @@ def generate_test_report():
     </html>
     """
 
-    out_path = os.path.join(os.getcwd(), 'fb_coreSDK_schema_validation_result.html')
+    out_path = os.path.join(os.getcwd(), 'CoreSanity_SchemaValidation_result_report.html')
     with open(out_path, 'w') as f:
         f.write(html)
     print(f"[SUCCESS] Generated test report: {out_path}")
