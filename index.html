@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Gateway Automation Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2196F3;
+            --primary-dark: #1976D2;
+            --success-color: #4CAF50;
+            --danger-color: #F44336;
+            --warning-color: #FF9800;
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-hover: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .tabs {
+            background: white;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 68px;
+            z-index: 99;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tab-list {
+            display: flex;
+            list-style: none;
+            padding: 0 2rem;
+        }
+
+        .tab-list li {
+            margin-right: 2rem;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 1rem 0;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-button:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Summary Tab Styles */
+        .summary-placeholder {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin: 0 auto;
+        }
+
+        .summary-placeholder h2 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .summary-placeholder p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .progress-animation {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+        }
+
+        .progress-spinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 6px solid var(--border-color);
+            border-top: 6px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+
+        .progress-spinner-inner {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            border: 4px solid transparent;
+            border-bottom: 4px solid var(--warning-color);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite reverse;
+        }
+
+        .progress-text {
+            color: var(--primary-color) !important;
+            font-weight: 600 !important;
+            font-size: 1.1rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Report Tab Styles */
+        .report-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 968px) {
+            .report-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar Filters */
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 140px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+            margin-bottom: 1.25rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .filter-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .filter-section h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .filter-chip.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .checkbox-filter {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-filter input[type="checkbox"] {
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-filter label {
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Report Results */
+        .report-results {
+            min-height: 400px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-count {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .results-count strong {
+            color: var(--text-primary);
+        }
+
+        .report-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 8px;
+            padding: 0.85rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .report-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .report-card.release {
+            border-left-color: var(--success-color);
+        }
+
+        .report-card.pr-test {
+            border-left-color: var(--warning-color);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+
+        .report-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-release {
+            background: #E8F5E9;
+            color: var(--success-color);
+        }
+
+        .badge-pr-test {
+            background: #FFF3E0;
+            color: var(--warning-color);
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .meta-item {
+            font-size: 0.78rem;
+        }
+
+        .meta-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .meta-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .no-results h3 {
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Report Groups */
+        .report-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .group-header {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.6rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .clear-filters {
+            background: none;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .clear-filters:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Documentation Tab Styles */
+        .doc-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .doc-container h2 {
+            font-size: 1.75rem;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .doc-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .doc-section h3 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .doc-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem 1.25rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: #d63384;
+            font-weight: 500;
+        }
+
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .doc-card {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .doc-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .doc-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .doc-card-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .example-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .example-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0.85rem;
+            background: #f8f9fa;
+            border-left: 3px solid var(--success-color);
+            border-radius: 4px;
+        }
+
+        .example-item code {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #d63384;
+            font-weight: 500;
+        }
+
+        .example-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>APP GATEWAY AUTOMATION REPORT</h1>
+    </header>
+
+    <div class="tabs">
+        <ul class="tab-list">
+            <li><button class="tab-button" data-tab="summary">Summary</button></li>
+            <li><button class="tab-button active" data-tab="report">Report</button></li>
+            <li><button class="tab-button" data-tab="documentation">Documentation</button></li>
+        </ul>
+    </div>
+
+    <div id="summary-tab" class="tab-content">
+        <div class="summary-placeholder">
+            <div class="progress-animation">
+                <div class="progress-spinner"></div>
+                <div class="progress-spinner-inner"></div>
+            </div>
+            <h2>Summary</h2>
+            <p class="progress-text">Work in Progress</p>
+            <p>Summary statistics and visualizations are being developed.</p>
+        </div>
+    </div>
+
+    <div id="report-tab" class="tab-content active">
+        <div class="report-layout">
+            <!-- Sidebar Filters -->
+            <aside class="sidebar">
+                <input type="text" class="search-box" id="search-input" placeholder="Search reports...">
+                
+                <div class="filter-section">
+                    <h3>Environment</h3>
+                    <div class="filter-group">
+                        <div class="filter-chip active" data-filter="env" data-value="all">All</div>
+                        <div class="filter-chip" data-filter="env" data-value="release">Release</div>
+                        <div class="filter-chip" data-filter="env" data-value="pr-test">PR Test</div>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Device Models</h3>
+                    <div id="device-filters"></div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Report Type</h3>
+                    <div id="type-filters"></div>
+                </div>
+
+                <button class="clear-filters" id="clear-filters">Clear All Filters</button>
+            </aside>
+
+            <!-- Report Results -->
+            <main class="report-results">
+                <div class="results-header">
+                    <div class="results-count">
+                        Showing <strong id="results-count">0</strong> reports
+                    </div>
+                </div>
+                <div id="report-grid" class="report-grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading reports...</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="documentation-tab" class="tab-content">
+        <div class="doc-container">
+            <h2>Naming Standards & Conventions</h2>
+            
+            <section class="doc-section">
+                <h3>Report Naming Pattern</h3>
+                <div class="code-block">
+                    &lt;suitename&gt;_&lt;type&gt;_&lt;result/regression&gt;_report.json
+                </div>
+                <p class="doc-description">All report files should follow this naming convention for consistency and automated processing.</p>
+            </section>
+
+            <section class="doc-section">
+                <h3>Suite Names</h3>
+                <div class="doc-grid">
+                    <div class="doc-card">
+                        <div class="doc-card-title">CoreSanity</div>
+                        <div class="doc-card-desc">Core functionality sanity tests</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="doc-card-title">BadgerSanity</div>
+                        <div class="doc-card-desc">Badger SDK sanity validation</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="doc-card-title">ThunderFirebolt</div>
+                        <div class="doc-card-desc">Thunder Firebolt integration tests</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="doc-card-title">FireboltEvents</div>
+                        <div class="doc-card-desc">Firebolt event validation suite</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="doc-card-title">AppLaunches</div>
+                        <div class="doc-card-desc">Application launch tests</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="doc-section">
+                <h3>Validation Types</h3>
+                <div class="doc-grid">
+                    <div class="doc-card">
+                        <div class="doc-card-title">SchemaValidation</div>
+                        <div class="doc-card-desc">JSON schema compliance validation</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="doc-card-title">ApiValidation</div>
+                        <div class="doc-card-desc">API endpoint validation tests</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="doc-card-title">TaskValidation</div>
+                        <div class="doc-card-desc">Task execution validation</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="doc-card-title">EventValidation</div>
+                        <div class="doc-card-desc">Event handling validation</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="doc-section">
+                <h3>Examples</h3>
+                <div class="example-list">
+                    <div class="example-item">
+                        <code>CoreSanity_SchemaValidation_result_report.json</code>
+                        <span class="example-desc">Core sanity schema validation results</span>
+                    </div>
+                    <div class="example-item">
+                        <code>BadgerSanity_ApiValidation_regression_report.json</code>
+                        <span class="example-desc">Badger API regression test results</span>
+                    </div>
+                    <div class="example-item">
+                        <code>FireboltEvents_EventValidation_result_report.json</code>
+                        <span class="example-desc">Firebolt event validation results</span>
+                    </div>
+                    <div class="example-item">
+                        <code>AppLaunches_TaskValidation_result_report.json</code>
+                        <span class="example-desc">App launch task validation results</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.dataset.tab;
+                
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                button.classList.add('active');
+                document.getElementById(`${targetTab}-tab`).classList.add('active');
+            });
+        });
+
+        // Report data structure
+        let allReports = [];
+        let filteredReports = [];
+        const filters = {
+            environment: 'all',
+            devices: new Set(),
+            types: new Set(),
+            search: ''
+        };
+
+        // Scan workspace for reports
+        async function scanReports() {
+            const reports = [];
+            const environments = ['release', 'pr-test'];
+
+            for (const env of environments) {
+                try {
+                    const versions = await fetchDirectoryListing(env);
+                    
+                    for (const version of versions) {
+                        try {
+                            const devices = await fetchDirectoryListing(`${env}/${version}`);
+                            
+                            for (const device of devices) {
+                                try {
+                                    const files = await fetchFileListing(`${env}/${version}/${device}`);
+                                    
+                                    files.forEach(file => {
+                                        if (file.endsWith('.html') && file !== 'index.html') {
+                                            reports.push({
+                                                environment: env,
+                                                version: version,
+                                                device: device,
+                                                filename: file,
+                                                path: `${env}/${version}/${device}/${file}`,
+                                                type: extractReportType(file),
+                                                displayName: formatDisplayName(file)
+                                            });
+                                        }
+                                    });
+                                } catch (e) {
+                                    console.warn(`Could not scan ${env}/${version}/${device}`, e);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn(`Could not scan ${env}/${version}`, e);
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Could not scan ${env}`, e);
+                }
+            }
+
+            return reports;
+        }
+
+        // Fetch directory listing (simplified - will need manual configuration)
+        async function fetchDirectoryListing(path) {
+            // Since we can't dynamically scan directories in static HTML,
+            // we'll use a hardcoded structure based on the workspace
+            const structure = {
+                'pr-test': ["RDKEMW-TEST", "RDKEMW-TEST01"],
+                'pr-test/RDKEMW-TEST': ["SCXI11BEI"],
+                'pr-test/RDKEMW-TEST01': ["SCXI11BEI"],
+                'release': ["0.2.0.0"],
+                'release/0.2.0.0': ["SKXI11ADS"],
+            };
+
+            return structure[path] || [];
+        }
+
+        // Fetch file listing
+        async function fetchFileListing(path) {
+            const fileStructure = {
+                'pr-test/RDKEMW-TEST/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
+                'pr-test/RDKEMW-TEST01/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
+                'pr-test/RDKEMW-TEST02/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
+                'pr-test/RDKEMW-TEST03/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
+                'release/0.2.0.0/SKXI11ADS': ["CoreSanity_SchemaValidation_result_report.html"],
+            };
+
+            return fileStructure[path] || [];
+        }
+
+        // Extract report type from filename
+        function extractReportType(filename) {
+            // New naming convention: <suitename>_<type>_<result/regression>_report.html
+            const parts = filename.replace('.html', '').split('_');
+            
+            if (parts.length >= 2) {
+                const type = parts[1];
+                // Convert camelCase to spaced words
+                return type.replace(/([A-Z])/g, ' $1').trim();
+            }
+            
+            // Fallback for old naming patterns
+            if (filename.includes('schema_validation')) return 'Schema Validation';
+            if (filename.includes('sanit')) return 'Sanity Test';
+            if (filename.includes('exec')) return 'Execution Report';
+            return 'Test Report';
+        }
+
+        // Format display name
+        function formatDisplayName(filename) {
+            return filename
+                .replace('.html', '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        // Initialize filters
+        function initializeFilters() {
+            const devices = new Set();
+            const types = new Set();
+
+            allReports.forEach(report => {
+                devices.add(report.device);
+                types.add(report.type);
+            });
+
+            // Render device filters
+            const deviceFiltersContainer = document.getElementById('device-filters');
+            deviceFiltersContainer.innerHTML = '';
+            Array.from(devices).sort().forEach(device => {
+                const filterEl = document.createElement('div');
+                filterEl.className = 'checkbox-filter';
+                filterEl.innerHTML = `
+                    <input type="checkbox" id="device-${device}" value="${device}">
+                    <label for="device-${device}">${device}</label>
+                `;
+                filterEl.querySelector('input').addEventListener('change', handleDeviceFilter);
+                deviceFiltersContainer.appendChild(filterEl);
+            });
+
+            // Render type filters
+            const typeFiltersContainer = document.getElementById('type-filters');
+            typeFiltersContainer.innerHTML = '';
+            Array.from(types).sort().forEach(type => {
+                const filterEl = document.createElement('div');
+                filterEl.className = 'checkbox-filter';
+                const typeId = type.replace(/\s+/g, '-').toLowerCase();
+                filterEl.innerHTML = `
+                    <input type="checkbox" id="type-${typeId}" value="${type}">
+                    <label for="type-${typeId}">${type}</label>
+                `;
+                filterEl.querySelector('input').addEventListener('change', handleTypeFilter);
+                typeFiltersContainer.appendChild(filterEl);
+            });
+        }
+
+        // Handle environment filter
+        document.querySelectorAll('.filter-chip[data-filter="env"]').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip[data-filter="env"]').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                filters.environment = chip.dataset.value;
+                applyFilters();
+            });
+        });
+
+        // Handle device filter
+        function handleDeviceFilter(e) {
+            const device = e.target.value;
+            if (e.target.checked) {
+                filters.devices.add(device);
+            } else {
+                filters.devices.delete(device);
+            }
+            applyFilters();
+        }
+
+        // Handle type filter
+        function handleTypeFilter(e) {
+            const type = e.target.value;
+            if (e.target.checked) {
+                filters.types.add(type);
+            } else {
+                filters.types.delete(type);
+            }
+            applyFilters();
+        }
+
+        // Handle search
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            filters.search = e.target.value.toLowerCase();
+            applyFilters();
+        });
+
+        // Clear filters
+        document.getElementById('clear-filters').addEventListener('click', () => {
+            filters.environment = 'all';
+            filters.devices.clear();
+            filters.types.clear();
+            filters.search = '';
+
+            document.getElementById('search-input').value = '';
+            document.querySelectorAll('.filter-chip[data-filter="env"]').forEach(c => c.classList.remove('active'));
+            document.querySelector('.filter-chip[data-value="all"]').classList.add('active');
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+            applyFilters();
+        });
+
+        // Apply filters
+        function applyFilters() {
+            filteredReports = allReports.filter(report => {
+                // Environment filter
+                if (filters.environment !== 'all' && report.environment !== filters.environment) {
+                    return false;
+                }
+
+                // Device filter
+                if (filters.devices.size > 0 && !filters.devices.has(report.device)) {
+                    return false;
+                }
+
+                // Type filter
+                if (filters.types.size > 0 && !filters.types.has(report.type)) {
+                    return false;
+                }
+
+                // Search filter
+                if (filters.search) {
+                    const searchText = `${report.version} ${report.device} ${report.type} ${report.displayName}`.toLowerCase();
+                    if (!searchText.includes(filters.search)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderReports();
+        }
+
+        // Render reports
+        function renderReports() {
+            const gridContainer = document.getElementById('report-grid');
+            const countElement = document.getElementById('results-count');
+            
+            countElement.textContent = filteredReports.length;
+
+            if (filteredReports.length === 0) {
+                gridContainer.innerHTML = `
+                    <div class="no-results">
+                        <h3>No reports found</h3>
+                        <p>Try adjusting your filters or search criteria</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group reports by environment and version
+            const grouped = {};
+            filteredReports.forEach(report => {
+                const key = `${report.environment}/${report.version}`;
+                if (!grouped[key]) {
+                    grouped[key] = [];
+                }
+                grouped[key].push(report);
+            });
+
+            let html = '';
+            // Sort groups: release first, then pr-test by version descending
+            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+                const [envA, versionA] = a.split('/');
+                const [envB, versionB] = b.split('/');
+                
+                // Release always comes first
+                if (envA === 'release' && envB !== 'release') return -1;
+                if (envA !== 'release' && envB === 'release') return 1;
+                
+                // Within same environment, sort by version descending
+                return versionB.localeCompare(versionA);
+            });
+
+            sortedKeys.forEach(groupKey => {
+                const [env, version] = groupKey.split('/');
+                const groupTitle = env === 'release' ? `Release: ${version}` : version;
+                html += `
+                    <div class="report-group">
+                        <div class="group-header">${groupTitle}</div>
+                `;
+
+                grouped[groupKey].forEach(report => {
+                    html += `
+                        <div class="report-card ${report.environment}" onclick="openReport('${report.path}')">
+                            <div class="report-header">
+                                <div>
+                                    <div class="report-title">${report.displayName}</div>
+                                </div>
+                                <span class="report-badge badge-${report.environment}">${report.environment === 'release' ? 'Release' : 'PR Test'}</span>
+                            </div>
+                            <div class="report-meta">
+                                <div class="meta-item">
+                                    <div class="meta-label">Device</div>
+                                    <div class="meta-value">${report.device}</div>
+                                </div>
+                                <div class="meta-item">
+                                    <div class="meta-label">Type</div>
+                                    <div class="meta-value">${report.type}</div>
+                                </div>
+                                <div class="meta-item">
+                                    <div class="meta-label">Version</div>
+                                    <div class="meta-value">${report.version}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            gridContainer.innerHTML = html;
+        }
+
+        // Open report
+        function openReport(path) {
+            window.open(path, '_blank');
+        }
+
+        // Initialize app
+        async function init() {
+            allReports = await scanReports();
+            filteredReports = [...allReports];
+            initializeFilters();
+            renderReports();
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
