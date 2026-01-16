@@ -780,8 +780,9 @@
         // Fetch directory listing (simplified - will need manual configuration)
         async function fetchDirectoryListing(path) {
             const structure = {
-                'pr-test': ["RDKEMW-0001"],
+                'pr-test': ["RDKEMW-0001", "RDKEMW-0002"],
                 'pr-test/RDKEMW-0001': ["SCXI11BEI"],
+                'pr-test/RDKEMW-0002': ["SCXI11BEI"],
             };
 
             return structure[path] || [];
@@ -791,6 +792,7 @@
         async function fetchFileListing(path) {
             const fileStructure = {
                 'pr-test/RDKEMW-0001/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
+                'pr-test/RDKEMW-0002/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
             };
 
             return fileStructure[path] || [];
