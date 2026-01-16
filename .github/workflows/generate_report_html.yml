@@ -100,4 +100,14 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add ${{ steps.resolve_result_dir.outputs.result_dir }}/*
           git commit -m "deploy: ${{ github.sha }}" || echo "No changes to commit"
+          
+          # Update index.html with latest reports
+          echo "📝 Updating index.html..."
+          python3 .github/scripts/update_index.py
+          
+          # Commit index.html changes if any
+          git add index.html
+          git commit -m "Auto-update reports index" || echo "No index changes to commit"
+          
+          # Push all changes to gh-pages
           git push origin gh-pages
