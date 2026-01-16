@@ -23,7 +23,7 @@ jobs:
           python-version: '3.11'
           
       - name: Scan reports and update index
-        run: python .github/scripts/update_index.py
+        run: python3 .github/scripts/update_index.py
         
       - name: Check for changes
         id: git-check
