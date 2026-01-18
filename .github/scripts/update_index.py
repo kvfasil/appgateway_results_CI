@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).parent.parent.parent
 INDEX_FILE = BASE_DIR / 'index.html'
 
 def scan_reports():
-    """Scan release and pr-test directories for HTML reports."""
+    """Scan release, prerelease, and develop directories for HTML reports."""
     file_structure = {}
     dir_structure = {}
     
@@ -28,10 +28,19 @@ def scan_reports():
                 for device_dir in version_dir.iterdir():
                     if device_dir.is_dir():
                         devices.append(device_dir.name)
+                        # Collect HTML files directly under device_dir
                         html_files = [
-                            f.name for f in device_dir.iterdir() 
+                            f.name for f in device_dir.iterdir()
                             if f.is_file() and f.suffix == '.html' and f.name != 'index.html'
                         ]
+                        # Also collect HTML files under one-level nested timestamp folders
+                        for subdir in device_dir.iterdir():
+                            if subdir.is_dir():
+                                nested_files = [
+                                    f"{subdir.name}/{f.name}" for f in subdir.iterdir()
+                                    if f.is_file() and f.suffix == '.html' and f.name != 'index.html'
+                                ]
+                                html_files.extend(nested_files)
                         if html_files:
                             key = f'release/{version_dir.name}/{device_dir.name}'
                             file_structure[key] = sorted(html_files)
@@ -39,14 +48,46 @@ def scan_reports():
                     dir_structure[f'release/{version_dir.name}'] = sorted(devices)
     if release_versions:
         dir_structure['release'] = sorted(release_versions)
+
+    # Scan prerelease directory
+    prerelease_dir = BASE_DIR / 'prerelease'
+    prerelease_versions = []
+    if prerelease_dir.exists():
+        for version_dir in prerelease_dir.iterdir():
+            if version_dir.is_dir():
+                prerelease_versions.append(version_dir.name)
+                devices = []
+                for device_dir in version_dir.iterdir():
+                    if device_dir.is_dir():
+                        devices.append(device_dir.name)
+                        # Collect HTML files directly under device_dir
+                        html_files = [
+                            f.name for f in device_dir.iterdir()
+                            if f.is_file() and f.suffix == '.html' and f.name != 'index.html'
+                        ]
+                        # Also collect HTML files under one-level nested timestamp folders
+                        for subdir in device_dir.iterdir():
+                            if subdir.is_dir():
+                                nested_files = [
+                                    f"{subdir.name}/{f.name}" for f in subdir.iterdir()
+                                    if f.is_file() and f.suffix == '.html' and f.name != 'index.html'
+                                ]
+                                html_files.extend(nested_files)
+                        if html_files:
+                            key = f'prerelease/{version_dir.name}/{device_dir.name}'
+                            file_structure[key] = sorted(html_files)
+                if devices:
+                    dir_structure[f'prerelease/{version_dir.name}'] = sorted(devices)
+    if prerelease_versions:
+        dir_structure['prerelease'] = sorted(prerelease_versions)
     
-    # Scan pr-test directory
-    pr_test_dir = BASE_DIR / 'pr-test'
-    pr_test_builds = []
-    if pr_test_dir.exists():
-        for build_dir in pr_test_dir.iterdir():
+    # Scan develop directory (aka develop builds)
+    develop_dir = BASE_DIR / 'develop'
+    develop_builds = []
+    if develop_dir.exists():
+        for build_dir in develop_dir.iterdir():
             if build_dir.is_dir():
-                pr_test_builds.append(build_dir.name)
+                develop_builds.append(build_dir.name)
                 devices = []
                 for device_dir in build_dir.iterdir():
                     if device_dir.is_dir():
@@ -55,13 +96,20 @@ def scan_reports():
                             f.name for f in device_dir.iterdir() 
                             if f.is_file() and f.suffix == '.html' and f.name != 'index.html'
                         ]
+                        for subdir in device_dir.iterdir():
+                            if subdir.is_dir():
+                                nested_files = [
+                                    f"{subdir.name}/{f.name}" for f in subdir.iterdir()
+                                    if f.is_file() and f.suffix == '.html' and f.name != 'index.html'
+                                ]
+                                html_files.extend(nested_files)
                         if html_files:
-                            key = f'pr-test/{build_dir.name}/{device_dir.name}'
+                            key = f'develop/{build_dir.name}/{device_dir.name}'
                             file_structure[key] = sorted(html_files)
                 if devices:
-                    dir_structure[f'pr-test/{build_dir.name}'] = sorted(devices)
-    if pr_test_builds:
-        dir_structure['pr-test'] = sorted(pr_test_builds)
+                    dir_structure[f'develop/{build_dir.name}'] = sorted(devices)
+    if develop_builds:
+        dir_structure['develop'] = sorted(develop_builds)
     
     return file_structure, dir_structure
 

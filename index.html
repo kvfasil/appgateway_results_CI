@@ -310,7 +310,11 @@
             border-left-color: var(--success-color);
         }
 
-        .report-card.pr-test {
+        .report-card.prerelease {
+            border-left-color: var(--warning-color);
+        }
+
+        .report-card.develop {
             border-left-color: var(--warning-color);
         }
 
@@ -341,7 +345,12 @@
             color: var(--success-color);
         }
 
-        .badge-pr-test {
+        .badge-prerelease {
+            background: #FFF3E0;
+            color: var(--warning-color);
+        }
+
+        .badge-develop {
             background: #FFF3E0;
             color: var(--warning-color);
         }
@@ -586,7 +595,8 @@
                     <div class="filter-group">
                         <div class="filter-chip active" data-filter="env" data-value="all">All</div>
                         <div class="filter-chip" data-filter="env" data-value="release">Release</div>
-                        <div class="filter-chip" data-filter="env" data-value="pr-test">PR Test</div>
+                        <div class="filter-chip" data-filter="env" data-value="prerelease">Pre Release</div>
+                        <div class="filter-chip" data-filter="env" data-value="develop">Develop</div>
                     </div>
                 </div>
 
@@ -734,7 +744,7 @@
         // Scan workspace for reports
         async function scanReports() {
             const reports = [];
-            const environments = ['release', 'pr-test'];
+            const environments = ['release', 'prerelease', 'develop'];
 
             for (const env of environments) {
                 try {
@@ -780,10 +790,10 @@
         // Fetch directory listing (simplified - will need manual configuration)
         async function fetchDirectoryListing(path) {
             const structure = {
-                'pr-test': ["RDKEMW-0001", "RDKEMW-0002", "RDKEMW-0003"],
-                'pr-test/RDKEMW-0001': ["SCXI11BEI"],
-                'pr-test/RDKEMW-0002': ["SCXI11BEI"],
-                'pr-test/RDKEMW-0003': ["SCXI11BEI"],
+                'develop': ["RDKEMW-0003"],
+                'develop/RDKEMW-0003': ["unknown"],
+                'prerelease': ["0.0.2.0"],
+                'prerelease/0.0.2.0': ["unknown"],
                 'release': ["0.0.2.0"],
                 'release/0.0.2.0': ["unknown"],
             };
@@ -794,9 +804,8 @@
         // Fetch file listing
         async function fetchFileListing(path) {
             const fileStructure = {
-                'pr-test/RDKEMW-0001/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
-                'pr-test/RDKEMW-0002/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
-                'pr-test/RDKEMW-0003/SCXI11BEI': ["CoreSanity_SchemaValidation_result_report.html"],
+                'develop/RDKEMW-0003/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
+                'prerelease/0.0.2.0/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
                 'release/0.0.2.0/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
             };
 
@@ -982,16 +991,14 @@
             });
 
             let html = '';
-            // Sort groups: release first, then pr-test by version descending
+            // Sort groups: release, prerelease, develop; then by version desc
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
                 const [envA, versionA] = a.split('/');
                 const [envB, versionB] = b.split('/');
-                
-                // Release always comes first
-                if (envA === 'release' && envB !== 'release') return -1;
-                if (envA !== 'release' && envB === 'release') return 1;
-                
-                // Within same environment, sort by version descending
+                const envOrder = { 'release': 0, 'prerelease': 1, 'develop': 2 };
+                const orderA = envOrder[envA] ?? 99;
+                const orderB = envOrder[envB] ?? 99;
+                if (orderA !== orderB) return orderA - orderB;
                 return versionB.localeCompare(versionA);
             });
 
@@ -1010,7 +1017,7 @@
                                 <div>
                                     <div class="report-title">${report.displayName}</div>
                                 </div>
-                                <span class="report-badge badge-${report.environment}">${report.environment === 'release' ? 'Release' : 'PR Test'}</span>
+                                <span class="report-badge badge-${report.environment}">${report.environment === 'release' ? 'Release' : (report.environment === 'prerelease' ? 'Pre Release' : 'Develop')}</span>
                             </div>
                             <div class="report-meta">
                                 <div class="meta-item">
