@@ -21,6 +21,12 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    
+    # pull lates in case multiple pushes happened quickly
+    - name: Pull latest changes
+      run: |
+        echo "[INFO] Pulling latest changes for branch ${{ github.ref_name }}"
+        git pull origin "${{ github.ref_name }}"  
 
     - name: Extract artifact and push results to branch
       shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
