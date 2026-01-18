@@ -126,7 +126,7 @@ jobs:
             fi
           fi
 
-          SUB_ROOT_DIR="v$RELEASE_VERSION"
+          SUB_ROOT_DIR=$RELEASE_VERSION
 
         fi
 
