@@ -55,15 +55,19 @@ jobs:
           exit 1
         fi
 
+        # try to determine artifact type from filename prefix
+        ARTIFACT_TYPE=$(basename "$LATEST_ARTIFACT" | cut -d'_' -f1)
+        echo "[INFO] Artifact type detected: $ARTIFACT_TYPE"
+
         echo "[INFO] Extracting artifact: $LATEST_ARTIFACT"
         tar -xzf "$LATEST_ARTIFACT" -C extracted
 
         # --------------------------------------------------
         # Generate timestamp from artifact filename (fallback to now)
-        # Expected format: results_YYYYMMDD_HHMMSS.tar.gz
+        # Expected format: <type>_YYYYMMDD_HHMMSS.tar.gz
         # --------------------------------------------------
         ARTIFACT_BASENAME=$(basename "$LATEST_ARTIFACT")
-        if [[ "$ARTIFACT_BASENAME" =~ ^results_([0-9]{8}_[0-9]{6})\.tar\.gz$ ]]; then
+        if [[ "$ARTIFACT_BASENAME" =~ ^${ARTIFACT_TYPE}_([0-9]{8}_[0-9]{6})\.tar\.gz$ ]]; then
           TIMESTAMP="${BASH_REMATCH[1]}"
         else
           TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
@@ -96,36 +100,35 @@ jobs:
         # --------------------------------------------------
         # Prepare output directories per requested structure
         # --------------------------------------------------
-        RESULT_DIR="pr-test/$BRANCH/$PROPOSITION/"
-        TARGET_DIR="pr-test/$BRANCH/$PROPOSITION/$TIMESTAMP"
-        TEST_ARTIFACTS_DIR="pr-test/$BRANCH/$PROPOSITION/artifacts"
-        mkdir -p "$RESULT_DIR" "$TEST_ARTIFACTS_DIR" "$TARGET_DIR"
-        cp -r extracted/* "$TARGET_DIR/"
-        cp extracted/version.txt .
-
-        # Move root artifacts tarballs into pr-test/<branch>/<proposition>/artifacts/
-        if ls artifacts/*.tar.gz >/dev/null 2>&1; then
-          echo "[INFO] Moving root artifacts/*.tar.gz into $TEST_ARTIFACTS_DIR"
-          mv artifacts/*.tar.gz "$TEST_ARTIFACTS_DIR/"
-          rm -f artifacts/*.tar.gz
+        if [ "$ARTIFACT_TYPE" == "development" ]; then
+          ROOT_DIR="development"
+          echo "[INFO] Artifact type is development; using development directory structure"
         else
-          echo "[INFO] No tarballs found to move from root artifacts/"
+          ROOT_DIR="release"
+          echo "[INFO] Artifact type is release; using release directory structure"
         fi
+        RESULT_DIR="$ROOT_DIR/$BRANCH/$PROPOSITION/"
+        TARGET_DIR="$ROOT_DIR/$BRANCH/$PROPOSITION/$TIMESTAMP"
+        mkdir -p "$RESULT_DIR" "$TARGET_DIR"
+        cp -r extracted/* "$TARGET_DIR/"
+        cp extracted/version.txt ${TARGET_DIR}/version.txt 2>/dev/null || echo "[INFO] No version.txt to copy"
 
-        echo "[INFO] Prepared directories: $RESULT_DIR and $TEST_ARTIFACTS_DIR (accumulating all artifacts without timestamp)"
+        rm artifacts/*.tar.gz || true  # Clean up artifacts to save space
+
+        echo "[INFO] Prepared directories: $RESULT_DIR"
 
         # Export RESULT_DIR to GITHUB_ENV so subsequent steps can access it
         echo "RESULT_DIR=$RESULT_DIR" >> "$GITHUB_ENV"
         echo "PROPOSITION=$PROPOSITION" >> "$GITHUB_ENV"
 
-        # Remove existing env_varables.txt if present
+        # Remove existing env_variables.txt if present
         # Remove when PR is merged.
-        if [ -f env_varables.txt ]; then
-          rm env_varables.txt || true
+        if [ -f env_variables.txt ]; then
+          rm env_variables.txt || true
         fi
 
-        echo "RESULT_DIR=$RESULT_DIR" >> "env_varables.txt"
-        echo "PROPOSITION=$PROPOSITION" >> "env_varables.txt"
+        echo "RESULT_DIR=$RESULT_DIR" >> "env_variables.txt"
+        echo "PROPOSITION=$PROPOSITION" >> "env_variables.txt"
         
         # --------------------------------------------------
         # Push results back to same PR branch using git
@@ -133,10 +136,10 @@ jobs:
         echo "[INFO] Adding files to git for branch $BRANCH"
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add "$RESULT_DIR" "$TEST_ARTIFACTS_DIR" artifacts/ env_varables.txt version.txt
+        git add "$RESULT_DIR" artifacts/ env_variables.txt version.txt
         if git commit -m "Add extracted artifacts for $BRANCH proposition=$PROPOSITION at $TIMESTAMP"; then
           git push origin HEAD:"$BRANCH"
-          echo "✅ Extracted files pushed to branch $BRANCH under $RESULT_DIR and updated $TEST_ARTIFACTS_DIR using git"
+          echo "✅ Extracted files pushed to branch $BRANCH under $RESULT_DIR using git"
         else
           echo "[INFO] No changes to commit; skipping push"
         fi
