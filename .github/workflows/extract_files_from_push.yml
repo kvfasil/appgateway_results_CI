@@ -111,7 +111,6 @@ jobs:
         TARGET_DIR="$ROOT_DIR/$BRANCH/$PROPOSITION/$TIMESTAMP"
         mkdir -p "$RESULT_DIR" "$TARGET_DIR"
         cp -r extracted/* "$TARGET_DIR/"
-        cp extracted/version.txt ${TARGET_DIR}/version.txt 2>/dev/null || echo "[INFO] No version.txt to copy"
 
         rm artifacts/*.tar.gz || true  # Clean up artifacts to save space
 
