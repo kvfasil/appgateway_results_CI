@@ -52,8 +52,9 @@ jobs:
         # Locate and extract latest artifact tarball in repo
         # --------------------------------------------------
         mkdir -p extracted
-        LATEST_ARTIFACT=$(ls artifacts/*.tar.gz 2>/dev/null | sort | tail -n1)
-
+        # find LATEST_ARTIFACT by modification time i have files with defferent names
+        LATEST_ARTIFACT=$(ls -t artifacts/*.tar.gz 2>/dev/null | head -n1 || true)
+        
         if [ -z "$LATEST_ARTIFACT" ]; then
           echo "[ERROR]: No artifact tarball found under artifacts/"
           exit 1
