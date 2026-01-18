@@ -1,2 +1,2 @@
-RESULT_DIR=prerelease/0.0.2.0/unknown/
+RESULT_DIR=develop/RDKEMW-0003/unknown/
 PROPOSITION=unknown
