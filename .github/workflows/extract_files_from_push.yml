@@ -107,6 +107,7 @@ jobs:
         if [ "$ARTIFACT_TYPE" == "develop" ]; then
           ROOT_DIR="development"
           echo "[INFO] Artifact type is development; using development directory structure"
+          SUB_ROOT_DIR="$BRANCH"
         else
           ROOT_DIR="release"
           echo "[INFO] Artifact type is release; using release directory structure"
@@ -120,12 +121,14 @@ jobs:
             if [ -n "$RELEASE_VERSION_LINE" ]; then
               RELEASE_VERSION=$(echo "$RELEASE_VERSION_LINE" | cut -d'=' -f2 | xargs)
               echo "[INFO] Found APPGATEWAY_VERSION: $RELEASE_VERSION"
-              SUB_ROOT_DIR="v$RELEASE_VERSION"
             else
               echo "[WARN] APPGATEWAY_VERSION not found in version.txt;"
-              SUB_ROOT_DIR="$BRANCH"
             fi
           fi
+
+          SUB_ROOT_DIR="v$RELEASE_VERSION"
+
+        fi
 
         RESULT_DIR="$ROOT_DIR/$SUB_ROOT_DIR/$PROPOSITION/"
         TARGET_DIR="$ROOT_DIR/$SUB_ROOT_DIR/$PROPOSITION/$TIMESTAMP"
