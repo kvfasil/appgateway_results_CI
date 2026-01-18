@@ -49,13 +49,13 @@ jobs:
         id: resolve_result_dir
         shell: bash
         run: |
-          if [ -f "env_varables.txt" ]; then
-            RESULT_DIR=$(grep 'RESULT_DIR=' env_varables.txt | cut -d '=' -f2-)
-            PROPOSITION=$(grep 'PROPOSITION=' env_varables.txt | cut -d '=' -f2-)
+          if [ -f "env_variables.txt" ]; then
+            RESULT_DIR=$(grep 'RESULT_DIR=' env_variables.txt | cut -d '=' -f2-)
+            PROPOSITION=$(grep 'PROPOSITION=' env_variables.txt | cut -d '=' -f2-)
             echo "result_dir=$RESULT_DIR" >> $GITHUB_OUTPUT
             echo "proposition=$PROPOSITION" >> $GITHUB_OUTPUT
           else
-            echo "env_varables.txt file not found!"
+            echo "env_variables.txt file not found!"
             exit 1
           fi
 
