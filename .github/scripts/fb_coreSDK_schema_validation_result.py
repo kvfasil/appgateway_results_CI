@@ -64,6 +64,9 @@ def generate_test_report():
 
     # Derive a readable timestamp from the subfolder name if possible
     timestamp = os.path.basename(latest_subfolder)
+    
+    # print timestamp info
+    print(f"[INFO] Using timestamp for report: {timestamp}")
 
     # Build HTML with embedded data
     # Note: double curly braces to escape within f-string CSS/JS

@@ -124,7 +124,7 @@ jobs:
           echo "[INFO] Artifact type is develop; using develop directory structure"
           SUB_ROOT_DIR="$BRANCH"
         else
-          ROOT_DIR="release"
+          ROOT_DIR="prerelease"
           echo "[INFO] Artifact type is release; using release directory structure"
 
           # grep APPGATEWAY_VERSION from version.txt if present eg:"APPGATEWAY_VERSION=$RELEASE_VERSION"
