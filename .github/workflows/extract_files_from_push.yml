@@ -150,7 +150,7 @@ jobs:
         mkdir -p "$RESULT_DIR" "$TARGET_DIR"
         cp -r extracted/* "$TARGET_DIR/"
 
-        rm artifacts/*.tar.gz || true  # Clean up artifacts to save space
+        rm -rf artifacts || true  # Clean up artifacts to save space
 
         echo "[INFO] Prepared directories: $RESULT_DIR"
 
@@ -173,7 +173,7 @@ jobs:
         echo "[INFO] Adding files to git for branch $BRANCH"
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add "$RESULT_DIR" env_variables.txt
+        git add "$RESULT_DIR" env_variables.txt artifacts
         if git commit -m "Add extracted artifacts for $BRANCH proposition=$PROPOSITION at $TIMESTAMP"; then
           git push origin HEAD:"$BRANCH"
           echo "✅ Extracted files pushed to branch $BRANCH under $RESULT_DIR using git"
