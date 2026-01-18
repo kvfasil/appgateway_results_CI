@@ -1,0 +1,387 @@
+{
+  "suite_name": "Complete Firebolt Schema Validation Test Suite",
+  "total_tests": 6,
+  "passed": 3,
+  "failed": 3,
+  "skipped": 0,
+  "duration_ms": 757,
+  "test_results": [
+    {
+      "test_id": "CONTENT001",
+      "test_name": "Content.requestUserInterest Schema Validation — Default Example",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Content.requestUserInterest",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Content.requestUserInterest",
+            "params": {
+              "reason": "playlist",
+              "type": "interest"
+            }
+          },
+          "response": {
+            "error": {
+              "code": 32001,
+              "message": "Provider not found for Discovery.onRequestUserInterest"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "appId": "cool-app",
+                "entity": {
+                  "identifiers": {
+                    "entityId": "345",
+                    "entityType": "program",
+                    "programType": "movie"
+                  },
+                  "info": {
+                    "contentRatings": [
+                      {
+                        "rating": "PG",
+                        "scheme": "US-Movie"
+                      },
+                      {
+                        "rating": "G",
+                        "scheme": "CA-Movie"
+                      }
+                    ],
+                    "releaseDate": "1993-01-01T00:00:00.000Z",
+                    "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pulvinar sapien et ligula ullamcorper malesuada proin libero nunc.",
+                    "title": "Cool Runnings"
+                  }
+                }
+              },
+              "name": "Default Example",
+              "params": {
+                "reason": "playlist",
+                "type": "interest"
+              }
+            }
+          ],
+          "error": "Schema validation failed: Validation Error: Schema validation error: Invalid value: JSON-RPC error response: {\"code\":32001,\"message\":\"Provider not found for Discovery.onRequestUserInterest\"}",
+          "duration_ms": 140
+        }
+      ],
+      "duration_ms": 140
+    },
+    {
+      "test_id": "CONTENT002",
+      "test_name": "Content.requestUserInterest Schema Validation — Another movie selection",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK002",
+          "description": "Call Content.requestUserInterest",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Content.requestUserInterest",
+            "params": {
+              "reason": "playlist",
+              "type": "interest"
+            }
+          },
+          "response": {
+            "error": {
+              "code": 32001,
+              "message": "Provider not found for Discovery.onRequestUserInterest"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "appId": "cool-app",
+                "entity": {
+                  "identifiers": {
+                    "entityId": "SER-001",
+                    "entityType": "program",
+                    "programType": "movie"
+                  },
+                  "info": {
+                    "contentRatings": [
+                      {
+                        "rating": "TV-G",
+                        "scheme": "US-TV"
+                      }
+                    ],
+                    "releaseDate": "2006-03-05T00:00:00.000Z",
+                    "synopsis": "Exploring natural phenomena across the globe.",
+                    "title": "Planet Earth"
+                  }
+                }
+              },
+              "name": "Another movie selection",
+              "params": {
+                "reason": "playlist",
+                "type": "interest"
+              }
+            }
+          ],
+          "error": "Schema validation failed: Validation Error: Schema validation error: Invalid value: JSON-RPC error response: {\"code\":32001,\"message\":\"Provider not found for Discovery.onRequestUserInterest\"}",
+          "duration_ms": 111
+        }
+      ],
+      "duration_ms": 111
+    },
+    {
+      "test_id": "CONTENT003",
+      "test_name": "Content.requestUserInterest Schema Validation — Sports-themed movie selection",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK003",
+          "description": "Call Content.requestUserInterest",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Content.requestUserInterest",
+            "params": {
+              "reason": "playlist",
+              "type": "interest"
+            }
+          },
+          "response": {
+            "error": {
+              "code": 32001,
+              "message": "Provider not found for Discovery.onRequestUserInterest"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "appId": "cool-app",
+                "entity": {
+                  "identifiers": {
+                    "entityId": "SP-9876",
+                    "entityType": "program",
+                    "programType": "movie"
+                  },
+                  "info": {
+                    "contentRatings": [
+                      {
+                        "rating": "TV-PG",
+                        "scheme": "US-TV"
+                      }
+                    ],
+                    "releaseDate": "1989-04-21T00:00:00.000Z",
+                    "synopsis": "A classic sports-themed drama.",
+                    "title": "Field of Dreams"
+                  }
+                }
+              },
+              "name": "Sports-themed movie selection",
+              "params": {
+                "reason": "playlist",
+                "type": "interest"
+              }
+            }
+          ],
+          "error": "Schema validation failed: Validation Error: Schema validation error: Invalid value: JSON-RPC error response: {\"code\":32001,\"message\":\"Provider not found for Discovery.onRequestUserInterest\"}",
+          "duration_ms": 116
+        }
+      ],
+      "duration_ms": 116
+    },
+    {
+      "test_id": "CONTENT004",
+      "test_name": "Content.onUserInterest Schema Validation — Default Example",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK004",
+          "description": "Subscribe and listen for Content.onUserInterest",
+          "status": "Success",
+          "request": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "Content.onUserInterest",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "content.onUserInterest",
+              "listening": true
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "appId": "cool-app",
+                "entity": {
+                  "identifiers": {
+                    "entityId": "345",
+                    "entityType": "program",
+                    "programType": "movie"
+                  },
+                  "info": {
+                    "contentRatings": [
+                      {
+                        "rating": "PG",
+                        "scheme": "US-Movie"
+                      },
+                      {
+                        "rating": "G",
+                        "scheme": "CA-Movie"
+                      }
+                    ],
+                    "releaseDate": "1993-01-01T00:00:00.000Z",
+                    "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pulvinar sapien et ligula ullamcorper malesuada proin libero nunc.",
+                    "title": "Cool Runnings"
+                  }
+                },
+                "reason": "playlist",
+                "type": "interest"
+              },
+              "name": "Default Example",
+              "params": {
+                "listen": true
+              }
+            }
+          ],
+          "duration_ms": 130
+        }
+      ],
+      "duration_ms": 130
+    },
+    {
+      "test_id": "CONTENT005",
+      "test_name": "Content.onUserInterest Schema Validation — Movie interest from carousel",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK005",
+          "description": "Subscribe and listen for Content.onUserInterest",
+          "status": "Success",
+          "request": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "Content.onUserInterest",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "content.onUserInterest",
+              "listening": true
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "appId": "cool-app",
+                "entity": {
+                  "identifiers": {
+                    "entityId": "SER-001",
+                    "entityType": "program",
+                    "programType": "movie"
+                  },
+                  "info": {
+                    "contentRatings": [
+                      {
+                        "rating": "TV-G",
+                        "scheme": "US-TV"
+                      }
+                    ],
+                    "releaseDate": "2006-03-05T00:00:00.000Z",
+                    "synopsis": "Exploring natural phenomena across the globe.",
+                    "title": "Planet Earth"
+                  }
+                },
+                "reason": "playlist",
+                "type": "interest"
+              },
+              "name": "Movie interest from carousel",
+              "params": {
+                "listen": true
+              }
+            }
+          ],
+          "duration_ms": 124
+        }
+      ],
+      "duration_ms": 124
+    },
+    {
+      "test_id": "CONTENT006",
+      "test_name": "Content.onUserInterest Schema Validation — Sports-themed movie interest",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK006",
+          "description": "Subscribe and listen for Content.onUserInterest",
+          "status": "Success",
+          "request": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "Content.onUserInterest",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "content.onUserInterest",
+              "listening": true
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "appId": "cool-app",
+                "entity": {
+                  "identifiers": {
+                    "entityId": "SP-9876",
+                    "entityType": "program",
+                    "programType": "movie"
+                  },
+                  "info": {
+                    "contentRatings": [
+                      {
+                        "rating": "TV-PG",
+                        "scheme": "US-TV"
+                      }
+                    ],
+                    "releaseDate": "1989-04-21T00:00:00.000Z",
+                    "synopsis": "A classic sports-themed drama.",
+                    "title": "Field of Dreams"
+                  }
+                },
+                "reason": "playlist",
+                "type": "interest"
+              },
+              "name": "Sports-themed movie interest",
+              "params": {
+                "listen": true
+              }
+            }
+          ],
+          "duration_ms": 133
+        }
+      ],
+      "duration_ms": 133
+    }
+  ]
+}
