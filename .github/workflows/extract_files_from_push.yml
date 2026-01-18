@@ -120,8 +120,8 @@ jobs:
         # Prepare output directories per requested structure
         # --------------------------------------------------
         if [ "$ARTIFACT_TYPE" == "develop" ]; then
-          ROOT_DIR="development"
-          echo "[INFO] Artifact type is development; using development directory structure"
+          ROOT_DIR="develop"
+          echo "[INFO] Artifact type is develop; using develop directory structure"
           SUB_ROOT_DIR="$BRANCH"
         else
           ROOT_DIR="release"
