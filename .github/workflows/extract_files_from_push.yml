@@ -52,17 +52,24 @@ jobs:
         # Locate and extract latest artifact tarball in repo
         # --------------------------------------------------
         mkdir -p extracted
-        # find LATEST_ARTIFACT by modification time i have files with defferent names
-        LATEST_ARTIFACT=$(ls -t artifacts/*.tar.gz 2>/dev/null | head -n1 || true)
-
-        echo "[INFO] Latest artifact found: $LATEST_ARTIFACT"
+        # Prefer release artifacts if present; else use develop.
+        # Order candidates by timestamp embedded in filename: <type>_YYYYMMDD_HHMMSS.tar.gz
+        RELEASE_CANDIDATE=$(ls artifacts/release_*.tar.gz 2>/dev/null | sed 's#.*/##' | sort -t'_' -k2,2 -k3,3 | tail -n1 || true)
+        DEVELOP_CANDIDATE=$(ls artifacts/develop_*.tar.gz 2>/dev/null | sed 's#.*/##' | sort -t'_' -k2,2 -k3,3 | tail -n1 || true)
+        if [ -n "$RELEASE_CANDIDATE" ]; then
+          LATEST_ARTIFACT="artifacts/$RELEASE_CANDIDATE"
+          echo "[INFO] Selected release artifact: $LATEST_ARTIFACT"
+        else
+          LATEST_ARTIFACT="artifacts/$DEVELOP_CANDIDATE"
+          echo "[INFO] Selected develop artifact: $LATEST_ARTIFACT"
+        fi
 
         if [ -z "$LATEST_ARTIFACT" ]; then
           echo "[ERROR]: No artifact tarball found under artifacts/"
           exit 1
         fi
 
-        # try to determine artifact type from filename prefix
+        # Determine artifact type from filename prefix
         ARTIFACT_TYPE=$(basename "$LATEST_ARTIFACT" | cut -d'_' -f1)
         echo "[INFO] Artifact type detected: $ARTIFACT_TYPE"
 
