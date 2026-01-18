@@ -104,15 +104,31 @@ jobs:
         # --------------------------------------------------
         # Prepare output directories per requested structure
         # --------------------------------------------------
-        if [ "$ARTIFACT_TYPE" == "development" ]; then
+        if [ "$ARTIFACT_TYPE" == "develop" ]; then
           ROOT_DIR="development"
           echo "[INFO] Artifact type is development; using development directory structure"
         else
           ROOT_DIR="release"
           echo "[INFO] Artifact type is release; using release directory structure"
-        fi
-        RESULT_DIR="$ROOT_DIR/$BRANCH/$PROPOSITION/"
-        TARGET_DIR="$ROOT_DIR/$BRANCH/$PROPOSITION/$TIMESTAMP"
+
+          # grep APPGATEWAY_VERSION from version.txt if present eg:"APPGATEWAY_VERSION=$RELEASE_VERSION"
+          RELEASE_VERSION=0.0.0.0
+          VERSION_FILE=extracted/version.txt
+
+          if [ -f "$VERSION_FILE" ]; then
+            RELEASE_VERSION_LINE=$(grep -i "^APPGATEWAY_VERSION=" "$VERSION_FILE" || true)
+            if [ -n "$RELEASE_VERSION_LINE" ]; then
+              RELEASE_VERSION=$(echo "$RELEASE_VERSION_LINE" | cut -d'=' -f2 | xargs)
+              echo "[INFO] Found APPGATEWAY_VERSION: $RELEASE_VERSION"
+              SUB_ROOT_DIR="v$RELEASE_VERSION"
+            else
+              echo "[WARN] APPGATEWAY_VERSION not found in version.txt;"
+              SUB_ROOT_DIR="$BRANCH"
+            fi
+          fi
+
+        RESULT_DIR="$ROOT_DIR/$SUB_ROOT_DIR/$PROPOSITION/"
+        TARGET_DIR="$ROOT_DIR/$SUB_ROOT_DIR/$PROPOSITION/$TIMESTAMP"
         mkdir -p "$RESULT_DIR" "$TARGET_DIR"
         cp -r extracted/* "$TARGET_DIR/"
 
