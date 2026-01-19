@@ -1,0 +1,35 @@
+{
+  "suite_name": "Test Suite To Validate Firebolt Schema Against responses",
+  "total_tests": 1,
+  "passed": 1,
+  "failed": 0,
+  "skipped": 0,
+  "duration_ms": 118,
+  "test_results": [
+    {
+      "test_id": "DEVICE002",
+      "test_name": "Device.distributor Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Get distributor ID",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.distributor",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": "xglobal"
+          },
+          "duration_ms": 118
+        }
+      ],
+      "duration_ms": 118
+    }
+  ]
+}
