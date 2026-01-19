@@ -94,8 +94,6 @@ jobs:
             echo "HTML report generation failed"
             exit 1
           fi
-          cp BadgerSanity_SchemaValidation_result_report.html /tmp/report.html
-
 
       - name: Deploy to GitHub Pages
         run: |
@@ -113,9 +111,18 @@ jobs:
           if [ -f /tmp/version.txt ]; then
             cp /tmp/version.txt ${{ steps.resolve_result_dir.outputs.result_dir }}/version.txt
           fi
+          
+          echo "Contents of /tmp directory:"
+          ls -la /tmp
+          echo    "Contents of target directory:"
+          ls -la
+          
+          echo    "Contents of deployment directory:"
+          ls -la ${{ steps.resolve_result_dir.outputs.result_dir }}
 
-          if [ -f /tmp/BadgerSanity_SchemaValidation_result_report.html ]; then
-            cp /tmp/BadgerSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/BadgerSanity_SchemaValidation_result_report.html
+          if [ -f BadgerSanity_SchemaValidation_result_report.html ]; then
+            echo "Adding Badger report to deployment"
+            cp BadgerSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/BadgerSanity_SchemaValidation_result_report.html
             git add ${{ steps.resolve_result_dir.outputs.result_dir }}/BadgerSanity_SchemaValidation_result_report.html
             git commit -m "deploy: Add Badger report for ${{ github.sha }}" || echo "No changes to commit"
           fi
