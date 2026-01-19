@@ -116,6 +116,8 @@ jobs:
 
           if [ -f /tmp/BadgerSanity_SchemaValidation_result_report.html ]; then
             cp /tmp/BadgerSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/BadgerSanity_SchemaValidation_result_report.html
+            git add ${{ steps.resolve_result_dir.outputs.result_dir }}/BadgerSanity_SchemaValidation_result_report.html
+            git commit -m "deploy: Add Badger report for ${{ github.sha }}" || echo "No changes to commit"
           fi
                     
           # Configure git and commit
