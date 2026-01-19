@@ -16,14 +16,14 @@ def find_latest_result_file(base_folder: str):
   if subfolders:
     latest_subfolder = max(subfolders, key=os.path.getmtime)
     print(f"[INFO] Using latest subfolder: {latest_subfolder}")
-    result_file = os.path.join(latest_subfolder, 'CoreSanity_SchemaValidation_response.json')
+    result_file = os.path.join(latest_subfolder, 'BadgerSanity_SchemaValidation_response.json')
     if os.path.isfile(result_file):
       print(f"[INFO] Found result file: {result_file}")
       return result_file, latest_subfolder
     else:
       print(f"[WARN] Result JSON not found in {latest_subfolder}")
   # Fallback: JSON directly inside base_folder
-  direct_json = os.path.join(base_folder, 'CoreSanity_SchemaValidation_response.json')
+  direct_json = os.path.join(base_folder, 'BadgerSanity_SchemaValidation_response.json')
   if os.path.isfile(direct_json):
     print(f"[INFO] Found direct result file: {direct_json}")
     return direct_json, base_folder
@@ -420,7 +420,7 @@ def generate_test_report():
     </html>
     """
 
-    out_path = os.path.join(os.getcwd(), 'CoreSanity_SchemaValidation_result_report.html')
+    out_path = os.path.join(os.getcwd(), 'BadgerSanity_SchemaValidation_result_report.html')
     with open(out_path, 'w') as f:
         f.write(html)
     print(f"[SUCCESS] Generated test report: {out_path}")

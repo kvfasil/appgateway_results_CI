@@ -78,6 +78,25 @@ jobs:
             exit 1
           fi
 
+      - name: Generate Badger sanity report HTML from JSON
+        env:
+          RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
+          RESULT_DIR: ${{ steps.resolve_result_dir.outputs.result_dir }}
+          PROPOSITION: ${{ steps.resolve_result_dir.outputs.proposition }}
+        run: |
+          echo "RESULT_BRANCH=${RESULT_BRANCH}"
+          echo "PROPOSITION=${PROPOSITION}"
+          echo "RESULT_DIR=${RESULT_DIR}"
+          ls -la "${RESULT_DIR}" || true
+          python3 .github/scripts/fb_badger_schema_validation_result.py
+
+          if [ ! -f "BadgerSanity_SchemaValidation_result_report.html" ]; then
+            echo "HTML report generation failed"
+            exit 1
+          fi
+          cp BadgerSanity_SchemaValidation_result_report.html /tmp/report.html
+
+
       - name: Deploy to GitHub Pages
         run: |
           # Save the generated files
@@ -93,6 +112,10 @@ jobs:
           cp /tmp/report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/CoreSanity_SchemaValidation_result_report.html
           if [ -f /tmp/version.txt ]; then
             cp /tmp/version.txt ${{ steps.resolve_result_dir.outputs.result_dir }}/version.txt
+          fi
+
+          if [ -f /tmp/BadgerSanity_SchemaValidation_result_report.html ]; then
+            cp /tmp/BadgerSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/BadgerSanity_SchemaValidation_result_report.html
           fi
                     
           # Configure git and commit
