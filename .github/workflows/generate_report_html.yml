@@ -59,7 +59,7 @@ jobs:
             exit 1
           fi
 
-      - name: Generate HTML from JSON
+      - name: Generate Core Sanity HTML report from JSON
         env:
           RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
           RESULT_DIR: ${{ steps.resolve_result_dir.outputs.result_dir }}
@@ -71,8 +71,6 @@ jobs:
           ls -la "${RESULT_DIR}" || true
           python3 .github/scripts/fb_coreSDK_schema_validation_result.py
 
-      - name: Validate generated HTML
-        run: |
           if [ ! -f "CoreSanity_SchemaValidation_result_report.html" ]; then
             echo "HTML report generation failed"
             exit 1
@@ -96,29 +94,23 @@ jobs:
           fi
 
       - name: Deploy to GitHub Pages
-        run: |
-          # Save the generated files
-          cp CoreSanity_SchemaValidation_result_report.html /tmp/report.html
-          cp version.txt /tmp/version.txt 2>/dev/null || echo "No version.txt"
-          
+        run: |          
           # Checkout gh-pages branch
           git fetch origin gh-pages
           git checkout gh-pages
           
           # Create target directory and copy files
           mkdir -p ${{ steps.resolve_result_dir.outputs.result_dir }}
-          cp /tmp/report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/CoreSanity_SchemaValidation_result_report.html
+
           if [ -f /tmp/version.txt ]; then
             cp /tmp/version.txt ${{ steps.resolve_result_dir.outputs.result_dir }}/version.txt
           fi
-          
-          echo "Contents of /tmp directory:"
-          ls -la /tmp
-          echo    "Contents of target directory:"
-          ls -la
-          
-          echo    "Contents of deployment directory:"
-          ls -la ${{ steps.resolve_result_dir.outputs.result_dir }}
+
+          if [ -f CoreSanity_SchemaValidation_result_report.html ]; then
+            echo "Adding Core Sanity report to deployment"
+            cp CoreSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/scan_results.json
+            git add ${{ steps.resolve_result_dir.outputs.result_dir }}/CoreSanity_SchemaValidation_result_report.html
+          fi
 
           if [ -f BadgerSanity_SchemaValidation_result_report.html ]; then
             echo "Adding Badger report to deployment"
@@ -143,3 +135,5 @@ jobs:
           
           # Push all changes to gh-pages
           git push origin gh-pages
+        
+          echo "✅ Reports deployed to GitHub Pages"
