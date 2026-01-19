@@ -7,6 +7,7 @@ import os
 import json
 import re
 from pathlib import Path
+import shutil
 
 # Base directory - go up two levels from .github/scripts to repo root
 BASE_DIR = Path(__file__).parent.parent.parent
@@ -89,6 +90,22 @@ def scan_reports():
             if build_dir.is_dir():
                 develop_builds.append(build_dir.name)
                 devices = []
+                # Collect HTML files directly under build_dir; ensure they are present under 'unknown' device
+                root_html_files = [
+                    f.name for f in build_dir.iterdir()
+                    if f.is_file() and f.suffix == '.html' and f.name != 'index.html'
+                ]
+                if root_html_files:
+                    unknown_dir = build_dir / 'unknown'
+                    unknown_dir.mkdir(parents=True, exist_ok=True)
+                    for name in root_html_files:
+                        src = build_dir / name
+                        dst = unknown_dir / name
+                        if not dst.exists():
+                            try:
+                                shutil.copy2(src, dst)
+                            except Exception as e:
+                                print(f"Warning: failed to copy {src} to {dst}: {e}")
                 for device_dir in build_dir.iterdir():
                     if device_dir.is_dir():
                         devices.append(device_dir.name)
@@ -107,7 +124,8 @@ def scan_reports():
                             key = f'develop/{build_dir.name}/{device_dir.name}'
                             file_structure[key] = sorted(html_files)
                 if devices:
-                    dir_structure[f'develop/{build_dir.name}'] = sorted(devices)
+                    # De-duplicate devices to avoid duplicates like ['unknown', 'unknown']
+                    dir_structure[f'develop/{build_dir.name}'] = sorted(set(devices))
     if develop_builds:
         dir_structure['develop'] = sorted(develop_builds)
     

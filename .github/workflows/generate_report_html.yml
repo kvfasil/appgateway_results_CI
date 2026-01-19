@@ -78,6 +78,24 @@ jobs:
             exit 1
           fi
 
+      - name: Generate Badger sanity report HTML from JSON
+        env:
+          RESULT_BRANCH: ${{ steps.resolve_branch.outputs.branch }}
+          RESULT_DIR: ${{ steps.resolve_result_dir.outputs.result_dir }}
+          PROPOSITION: ${{ steps.resolve_result_dir.outputs.proposition }}
+        run: |
+          echo "RESULT_BRANCH=${RESULT_BRANCH}"
+          echo "PROPOSITION=${PROPOSITION}"
+          echo "RESULT_DIR=${RESULT_DIR}"
+          ls -la "${RESULT_DIR}" || true
+          python3 .github/scripts/fb_badger_schema_validation_result.py
+
+          if [ -f "BadgerSanity_SchemaValidation_result_report.html" ]; then
+            cp BadgerSanity_SchemaValidation_result_report.html /tmp/BadgerSanity_SchemaValidation_result_report.html
+          else
+            echo "Badger report not generated; continuing"
+          fi
+
       - name: Deploy to GitHub Pages
         run: |
           # Save the generated files
@@ -94,10 +112,23 @@ jobs:
           if [ -f /tmp/version.txt ]; then
             cp /tmp/version.txt ${{ steps.resolve_result_dir.outputs.result_dir }}/version.txt
           fi
+          if [ -f /tmp/BadgerSanity_SchemaValidation_result_report.html ]; then
+            cp /tmp/BadgerSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/BadgerSanity_SchemaValidation_result_report.html
+          fi
                     
           # Configure git and commit
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add ${{ steps.resolve_result_dir.outputs.result_dir }}/*
           git commit -m "deploy: ${{ github.sha }}" || echo "No changes to commit"
+          
+          # Update index.html with latest reports
+          echo "📝 Updating index.html..."
+          python3 .github/scripts/update_index.py
+          
+          # Commit index.html changes if any
+          git add index.html
+          git commit -m "Auto-update reports index" || echo "No index changes to commit"
+          
+          # Push all changes to gh-pages
           git push origin gh-pages
