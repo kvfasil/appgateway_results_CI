@@ -1,0 +1,227 @@
+{
+  "suite_name": "Test Suite To Validate Firebolt and Thunder API Consistency.",
+  "total_tests": 1,
+  "passed": 1,
+  "failed": 0,
+  "skipped": 0,
+  "duration_ms": 1727,
+  "test_results": [
+    {
+      "test_id": "TEST001",
+      "test_name": "Device.name API check",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Firebolt event: Device.onNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onNameChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "device.onNameChanged",
+              "listening": true
+            }
+          },
+          "duration_ms": 117
+        },
+        {
+          "step_id": "TASK002",
+          "description": "Subscribe to Thunder event: org.rdk.System.onFriendlyNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.register",
+            "params": {
+              "event": "onFriendlyNameChanged",
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": 0
+          },
+          "duration_ms": 120
+        },
+        {
+          "step_id": "TASK003",
+          "description": "Get initial value from Firebolt: Device.name",
+          "status": "Success",
+          "request": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "method": "Device.name",
+            "params": {}
+          },
+          "response": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": "Living room"
+          },
+          "duration_ms": 140
+        },
+        {
+          "step_id": "TASK004",
+          "description": "Get initial value from Thunder: org.rdk.System.getFriendlyName",
+          "status": "Success",
+          "request": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.getFriendlyName"
+          },
+          "response": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "result": {
+              "friendlyName": "Living room",
+              "success": true
+            }
+          },
+          "duration_ms": 146
+        },
+        {
+          "step_id": "TASK005",
+          "description": "Set new value via Firebolt: Device.setName",
+          "status": "Success",
+          "request": {
+            "id": 5,
+            "jsonrpc": "2.0",
+            "method": "Device.setName",
+            "params": {
+              "value": "BEDROOM"
+            }
+          },
+          "response": {
+            "id": 5,
+            "jsonrpc": "2.0",
+            "result": null
+          },
+          "duration_ms": 146
+        },
+        {
+          "step_id": "TASK006",
+          "description": "Get updated value from Firebolt: Device.name",
+          "status": "Success",
+          "request": {
+            "id": 6,
+            "jsonrpc": "2.0",
+            "method": "Device.name",
+            "params": {}
+          },
+          "response": {
+            "id": 6,
+            "jsonrpc": "2.0",
+            "result": "BEDROOM"
+          },
+          "duration_ms": 127
+        },
+        {
+          "step_id": "TASK007",
+          "description": "Get updated value from Thunder: org.rdk.System.getFriendlyName",
+          "status": "Success",
+          "request": {
+            "id": 7,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.getFriendlyName"
+          },
+          "response": {
+            "id": 7,
+            "jsonrpc": "2.0",
+            "result": {
+              "friendlyName": "BEDROOM",
+              "success": true
+            }
+          },
+          "duration_ms": 121
+        }
+      ],
+      "assertions": [
+        "ASSERT001 : PASSED : compare : Bool(true) = Bool(true)",
+        "ASSERT002 : PASSED : compare : Number(0) = Number(0)",
+        "ASSERT003 : PASSED : equals : String(\"Living room\") = String(\"Living room\")",
+        "ASSERT005 : PASSED : notequals : String(\"Living room\") != String(\"BEDROOM\")",
+        "ASSERT006 : PASSED : equals : String(\"BEDROOM\") = String(\"BEDROOM\")",
+        "ASSERT007 : PASSED : eventreceived : Firebolt event received for task 'TASK001'",
+        "ASSERT008 : PASSED : eventreceived : Thunder event received for task 'TASK002'"
+      ],
+      "post_steps": [
+        {
+          "step_id": "POST_TASK001",
+          "description": "Unsubscribing to Firebolt event: Device.onNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onNameChanged",
+            "params": {
+              "listen": false
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "device.onNameChanged",
+            "params": {
+              "listen": false
+            },
+            "result": {
+              "event": "device.onNameChanged",
+              "listening": false
+            }
+          },
+          "duration_ms": 113
+        },
+        {
+          "step_id": "POST_TASK002",
+          "description": "Unsubscribing to Thunder event: org.rdk.System.onFriendlyNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.unregister",
+            "params": {
+              "event": "onFriendlyNameChanged",
+              "listen": false
+            }
+          },
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": 0
+          },
+          "duration_ms": 110
+        },
+        {
+          "step_id": "POST_TASK003",
+          "description": "Reset Device.name to original value via Firebolt: Device.setName",
+          "status": "Success",
+          "request": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "method": "Device.setName",
+            "params": {
+              "value": "Living room"
+            }
+          },
+          "response": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": null
+          },
+          "duration_ms": 583
+        }
+      ],
+      "duration_ms": 1727
+    }
+  ]
+}

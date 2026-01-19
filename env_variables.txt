@@ -1,0 +1,2 @@
+RESULT_DIR=develop/RDKEMW-0004/unknown/
+PROPOSITION=unknown

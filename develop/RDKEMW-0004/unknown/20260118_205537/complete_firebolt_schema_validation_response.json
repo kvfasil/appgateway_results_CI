@@ -1,0 +1,767 @@
+{
+  "suite_name": "Complete Firebolt Schema Validation Test Suite",
+  "total_tests": 26,
+  "passed": 13,
+  "failed": 13,
+  "skipped": 0,
+  "duration_ms": 5720,
+  "test_results": [
+    {
+      "test_id": "DEVICE001",
+      "test_name": "Device.id Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.id",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.id",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "Custom error: device.info.mac_address error"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 113
+        }
+      ],
+      "duration_ms": 113
+    },
+    {
+      "test_id": "DEVICE002",
+      "test_name": "Device.distributor Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.distributor",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.distributor",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "Custom error: Distributor ID not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 108
+        }
+      ],
+      "duration_ms": 108
+    },
+    {
+      "test_id": "DEVICE003",
+      "test_name": "Device.platform Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.platform",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.platform",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": "WPE"
+          },
+          "duration_ms": 107
+        }
+      ],
+      "duration_ms": 107
+    },
+    {
+      "test_id": "DEVICE004",
+      "test_name": "Device.uid Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.uid",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.uid",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "Custom error: Error: failed to get account session"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 115
+        }
+      ],
+      "duration_ms": 115
+    },
+    {
+      "test_id": "DEVICE005",
+      "test_name": "Device.type Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.type",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.type",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": "ipstb"
+          },
+          "duration_ms": 106
+        }
+      ],
+      "duration_ms": 107
+    },
+    {
+      "test_id": "DEVICE006",
+      "test_name": "Device.model Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.model",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.model",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": "XiOne-SCB"
+          },
+          "duration_ms": 114
+        }
+      ],
+      "duration_ms": 114
+    },
+    {
+      "test_id": "DEVICE007",
+      "test_name": "Device.sku Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.sku",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.sku",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32100,
+              "message": "Failed to get SKU"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 126
+        }
+      ],
+      "duration_ms": 126
+    },
+    {
+      "test_id": "DEVICE008",
+      "test_name": "Device.make Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.make",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.make",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": null
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Type mismatch at result: expected string, got null",
+          "duration_ms": 121
+        }
+      ],
+      "duration_ms": 121
+    },
+    {
+      "test_id": "DEVICE009",
+      "test_name": "Device.version Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.version",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.version",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "api": {
+                "major": 1,
+                "minor": 5,
+                "patch": 0,
+                "readable": "Firebolt API v1.5.0"
+              },
+              "debug": "1.1.0",
+              "firmware": {
+                "major": 6,
+                "minor": 9,
+                "patch": 0,
+                "readable": "SCXI11BEI_VBN_23Q4_sprint_20231107000320sdy_FG_EDGE_R2PB_NG"
+              },
+              "os": {
+                "major": 6,
+                "minor": 9,
+                "patch": 0,
+                "readable": "SCXI11BEI_VBN_23Q4_sprint_20231107000320sdy_FG_EDGE_R2PB_NG"
+              }
+            }
+          },
+          "duration_ms": 110
+        }
+      ],
+      "duration_ms": 110
+    },
+    {
+      "test_id": "DEVICE010",
+      "test_name": "Device.hdcp Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.hdcp",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.hdcp",
+            "params": {}
+          },
+          "response": {
+            "error": "ParseError",
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 113
+        }
+      ],
+      "duration_ms": 113
+    },
+    {
+      "test_id": "DEVICE011",
+      "test_name": "Device.hdr Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.hdr",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.hdr",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "code": -32100,
+              "message": "could not get device hdr"
+            }
+          },
+          "duration_ms": 126
+        }
+      ],
+      "duration_ms": 126
+    },
+    {
+      "test_id": "DEVICE012",
+      "test_name": "Device.audio Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.audio",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.audio",
+            "params": {}
+          },
+          "response": {
+            "error": "ParseError",
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "error": "An error message from calling the downstream http service=http://127.0.0.1:9005/as in http broker BrokerError(\"error trying to connect: tcp connect error: Connection refused (os error 61)\")"
+            }
+          },
+          "duration_ms": 135
+        }
+      ],
+      "duration_ms": 135
+    },
+    {
+      "test_id": "DEVICE013",
+      "test_name": "Device.screenResolution Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.screenResolution",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.screenResolution",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32100,
+              "message": "error, failed to get screen resolution"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 126
+        }
+      ],
+      "duration_ms": 126
+    },
+    {
+      "test_id": "DEVICE014",
+      "test_name": "Device.videoResolution Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.videoResolution",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.videoResolution",
+            "params": {}
+          },
+          "response": {
+            "error": "ParseError",
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "error": "An error message from calling the downstream http service=http://127.0.0.1:9005/as in http broker BrokerError(\"error trying to connect: tcp connect error: Connection refused (os error 61)\")"
+            }
+          },
+          "duration_ms": 119
+        }
+      ],
+      "duration_ms": 119
+    },
+    {
+      "test_id": "DEVICE015",
+      "test_name": "Device.name Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.name",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.name",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": "My Device"
+          },
+          "duration_ms": 123
+        }
+      ],
+      "duration_ms": 123
+    },
+    {
+      "test_id": "DEVICE016",
+      "test_name": "Device.onDeviceNameChanged Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onDeviceNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onDeviceNameChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "device.onDeviceNameChanged",
+              "listening": true
+            }
+          },
+          "duration_ms": 109
+        }
+      ],
+      "duration_ms": 109
+    },
+    {
+      "test_id": "DEVICE017",
+      "test_name": "Device.network Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.network",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.network",
+            "params": {}
+          },
+          "response": {
+            "error": "ParseError",
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 123
+        }
+      ],
+      "duration_ms": 123
+    },
+    {
+      "test_id": "DEVICE018",
+      "test_name": "Device.provision Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Device.provision",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.provision",
+            "params": {
+              "accountId": "12345678910",
+              "deviceId": "987654321111",
+              "distributorId": "global_partner"
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "Custom error: Provision Status error response TBD"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 115
+        }
+      ],
+      "duration_ms": 115
+    },
+    {
+      "test_id": "DEVICE019",
+      "test_name": "Device.onNameChanged Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onNameChanged",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onNameChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:org.rdk.System.register , params: Some(Object {\"event\": String(\"onFriendlyNameChanged\"), \"id\": String(\"189\")}) not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 111
+        }
+      ],
+      "duration_ms": 111
+    },
+    {
+      "test_id": "DEVICE020",
+      "test_name": "Device.onHdcpChanged Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onHdcpChanged",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onHdcpChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:org.rdk.HdcpProfile.register , params: Some(Object {\"event\": String(\"onDisplayConnectionChanged\"), \"id\": String(\"190\")}) not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 111
+        }
+      ],
+      "duration_ms": 111
+    },
+    {
+      "test_id": "DEVICE021",
+      "test_name": "Device.onHdrChanged Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onHdrChanged",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onHdrChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:org.rdk.HdcpProfile.register , params: Some(Object {\"event\": String(\"onDisplayConnectionChanged\"), \"id\": String(\"191\")}) not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 113
+        }
+      ],
+      "duration_ms": 113
+    },
+    {
+      "test_id": "DEVICE022",
+      "test_name": "Device.onAudioChanged Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onAudioChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onAudioChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "device.onAudioChanged",
+              "listening": true
+            }
+          },
+          "duration_ms": 115
+        }
+      ],
+      "duration_ms": 115
+    },
+    {
+      "test_id": "DEVICE023",
+      "test_name": "Device.onScreenResolutionChanged Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onScreenResolutionChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onScreenResolutionChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "device.onScreenResolutionChanged",
+              "listening": true
+            }
+          },
+          "duration_ms": 1006
+        }
+      ],
+      "duration_ms": 1006
+    },
+    {
+      "test_id": "DEVICE024",
+      "test_name": "Device.onVideoResolutionChanged Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onVideoResolutionChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onVideoResolutionChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "device.onVideoResolutionChanged",
+              "listening": true
+            }
+          },
+          "duration_ms": 1011
+        }
+      ],
+      "duration_ms": 1011
+    },
+    {
+      "test_id": "DEVICE025",
+      "test_name": "Device.onNetworkChanged Schema Validation",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Device event: onNetworkChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onNetworkChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "state": 0,
+              "status": "FULLY_CONNECTED"
+            }
+          },
+          "duration_ms": 1002
+        }
+      ],
+      "duration_ms": 1002
+    },
+    {
+      "test_id": "DEVICE026",
+      "test_name": "Device.setName Schema Validation",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Set name in Device",
+          "status": "Failed",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.setName",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32100,
+              "message": "couldn't set name"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "error": "Schema validation failed: Validation Error: Schema validation error: Missing required field: result",
+          "duration_ms": 127
+        }
+      ],
+      "duration_ms": 127
+    }
+  ]
+}

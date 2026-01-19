@@ -1,0 +1,237 @@
+{
+  "suite_name": "Test Suite To Validate Firebolt and Thunder API Consistency.",
+  "total_tests": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "duration_ms": 1979,
+  "test_results": [
+    {
+      "test_id": "TEST003",
+      "test_name": "Device.name API check",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Subscribe to Firebolt event: Device.onNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onNameChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:org.rdk.System.register , params: Some(Object {\"event\": String(\"onFriendlyNameChanged\"), \"id\": String(\"2\")}) not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "duration_ms": 112
+        },
+        {
+          "step_id": "TASK002",
+          "description": "Subscribe to Thunder event: org.rdk.System.onFriendlyNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 12,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.register",
+            "params": {
+              "event": "onFriendlyNameChanged",
+              "listen": true
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:org.rdk.System.register , params: Some(Object {\"event\": String(\"onFriendlyNameChanged\"), \"listen\": Bool(true)}) not found"
+            },
+            "id": 12,
+            "jsonrpc": "2.0"
+          },
+          "duration_ms": 107
+        },
+        {
+          "step_id": "TASK003",
+          "description": "Get initial value from Firebolt: Device.name",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.name",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:Device.name , params: Some(Object {}) not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "duration_ms": 106
+        },
+        {
+          "step_id": "TASK004",
+          "description": "Get initial value from Thunder: org.rdk.System.getFriendlyName",
+          "status": "Success",
+          "request": {
+            "id": 12,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.getFriendlyName"
+          },
+          "response": {
+            "id": 12,
+            "jsonrpc": "2.0",
+            "result": {
+              "friendlyName": "My Device",
+              "success": true
+            }
+          },
+          "duration_ms": 104
+        },
+        {
+          "step_id": "TASK005",
+          "description": "Set new value via Firebolt: Device.setName",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.setName",
+            "params": {
+              "value": "BEDROOM"
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:Device.setName , params: Some(Object {\"value\": String(\"BEDROOM\")}) not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "duration_ms": 106
+        },
+        {
+          "step_id": "TASK006",
+          "description": "Get updated value from Firebolt: Device.name",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.name",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:Device.name , params: Some(Object {}) not found"
+            },
+            "id": 1,
+            "jsonrpc": "2.0"
+          },
+          "duration_ms": 106
+        },
+        {
+          "step_id": "TASK007",
+          "description": "Get updated value from Thunder: org.rdk.System.getFriendlyName",
+          "status": "Success",
+          "request": {
+            "id": 12,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.getFriendlyName"
+          },
+          "response": {
+            "id": 12,
+            "jsonrpc": "2.0",
+            "result": {
+              "friendlyName": "My Device",
+              "success": true
+            }
+          },
+          "duration_ms": 106
+        }
+      ],
+      "assertions": [
+        "ASSERT001 : FAILED : compare : Assertion Failed: JSON path 'result.listening' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:org.rdk.System.register , params: Some(Object {\\\"event\\\": String(\\\"onFriendlyNameChanged\\\"), \\\"id\\\": String(\\\"2\\\")}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "ASSERT002 : FAILED : compare : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:org.rdk.System.register , params: Some(Object {\\\"event\\\": String(\\\"onFriendlyNameChanged\\\"), \\\"listen\\\": Bool(true)}) not found\"},\"id\":12,\"jsonrpc\":\"2.0\"}",
+        "ASSERT003 : FAILED : equals : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "    value_a (TASK003.result): ERROR - Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "    value_b (TASK004.result.friendlyName): \"My Device\"",
+        "ASSERT005 : FAILED : notequals : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "    value_a (TASK003.result): ERROR - Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "    value_b (TASK006.result): ERROR - Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "ASSERT006 : FAILED : equals : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "    value_a (TASK006.result): ERROR - Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+        "    value_b (TASK007.result.friendlyName): \"My Device\"",
+        "ASSERT007 : FAILED : eventreceived : Assertion Failed: No events received for task 'TASK001' (listener was active but no events captured)",
+        "ASSERT008 : FAILED : eventreceived : Assertion Failed: No events received for task 'TASK002' (listener was active but no events captured)"
+      ],
+      "error": "ASSERT001 : Assertion Failed: JSON path 'result.listening' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:org.rdk.System.register , params: Some(Object {\\\"event\\\": String(\\\"onFriendlyNameChanged\\\"), \\\"id\\\": String(\\\"2\\\")}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}; ASSERT002 : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:org.rdk.System.register , params: Some(Object {\\\"event\\\": String(\\\"onFriendlyNameChanged\\\"), \\\"listen\\\": Bool(true)}) not found\"},\"id\":12,\"jsonrpc\":\"2.0\"}; ASSERT003 : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}; ASSERT005 : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}; ASSERT006 : Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}; ASSERT007 : Assertion Failed: No events received for task 'TASK001' (listener was active but no events captured); ASSERT008 : Assertion Failed: No events received for task 'TASK002' (listener was active but no events captured)",
+      "post_steps": [
+        {
+          "step_id": "POST_TASK001",
+          "description": "Unsubscribing to Firebolt event: Device.onNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Device.onNameChanged",
+            "params": {
+              "listen": false
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "device.onNameChanged",
+            "params": {
+              "listen": false
+            },
+            "result": {
+              "event": "device.onNameChanged",
+              "listening": false
+            }
+          },
+          "duration_ms": 108
+        },
+        {
+          "step_id": "POST_TASK002",
+          "description": "Unsubscribing to Thunder event: org.rdk.System.onFriendlyNameChanged",
+          "status": "Success",
+          "request": {
+            "id": 12,
+            "jsonrpc": "2.0",
+            "method": "org.rdk.System.register",
+            "params": {
+              "event": "onFriendlyNameChanged",
+              "listen": false
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:org.rdk.System.register , params: Some(Object {\"event\": String(\"onFriendlyNameChanged\"), \"listen\": Bool(false)}) not found"
+            },
+            "id": 12,
+            "jsonrpc": "2.0"
+          },
+          "duration_ms": 107
+        },
+        {
+          "step_id": "POST_TASK003",
+          "description": "Reset Device.name to original value via Firebolt: Device.setName",
+          "status": "Failed",
+          "error": "Path resolution failed: Assertion Failed: JSON path 'result' not found in response: {\"error\":{\"code\":-32001,\"message\":\"mock data for request:Device.name , params: Some(Object {}) not found\"},\"id\":1,\"jsonrpc\":\"2.0\"}",
+          "duration_ms": 0
+        }
+      ],
+      "duration_ms": 1978
+    }
+  ]
+}
