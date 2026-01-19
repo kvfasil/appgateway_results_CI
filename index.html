@@ -310,12 +310,12 @@
             border-left-color: var(--success-color);
         }
 
-        .report-card.prerelease {
+        .report-card.develop {
             border-left-color: var(--warning-color);
         }
 
-        .report-card.develop {
-            border-left-color: var(--warning-color);
+        .report-card.prerelease {
+            border-left-color: var(--primary-color);
         }
 
         .report-header {
@@ -345,14 +345,14 @@
             color: var(--success-color);
         }
 
-        .badge-prerelease {
+        .badge-develop {
             background: #FFF3E0;
             color: var(--warning-color);
         }
 
-        .badge-develop {
-            background: #FFF3E0;
-            color: var(--warning-color);
+        .badge-prerelease {
+            background: #E3F2FD;
+            color: var(--primary-color);
         }
 
         .report-meta {
@@ -790,10 +790,6 @@
         // Fetch directory listing (simplified - will need manual configuration)
         async function fetchDirectoryListing(path) {
             const structure = {
-                'develop': ["RDKEMW-0003"],
-                'develop/RDKEMW-0003': ["unknown"],
-                'prerelease': ["0.0.2.0"],
-                'prerelease/0.0.2.0': ["unknown"],
                 'release': ["0.0.2.0"],
                 'release/0.0.2.0': ["unknown"],
             };
@@ -804,8 +800,6 @@
         // Fetch file listing
         async function fetchFileListing(path) {
             const fileStructure = {
-                'develop/RDKEMW-0003/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
-                'prerelease/0.0.2.0/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
                 'release/0.0.2.0/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
             };
 
@@ -832,7 +826,8 @@
 
         // Format display name
         function formatDisplayName(filename) {
-            return filename
+            const base = filename.split('/').pop().replace(/^\.\.\//, '');
+            return base
                 .replace('.html', '')
                 .replace(/_/g, ' ')
                 .replace(/\b\w/g, l => l.toUpperCase());
@@ -991,33 +986,34 @@
             });
 
             let html = '';
-            // Sort groups: release, prerelease, develop; then by version desc
+            // Sort groups: Release > Pre Release > Develop, then version desc
+            const envRank = { 'release': 0, 'prerelease': 1, 'develop': 2 };
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
                 const [envA, versionA] = a.split('/');
                 const [envB, versionB] = b.split('/');
-                const envOrder = { 'release': 0, 'prerelease': 1, 'develop': 2 };
-                const orderA = envOrder[envA] ?? 99;
-                const orderB = envOrder[envB] ?? 99;
-                if (orderA !== orderB) return orderA - orderB;
+                const rankA = envRank[envA] ?? 99;
+                const rankB = envRank[envB] ?? 99;
+                if (rankA !== rankB) return rankA - rankB;
                 return versionB.localeCompare(versionA);
             });
 
             sortedKeys.forEach(groupKey => {
                 const [env, version] = groupKey.split('/');
-                const groupTitle = env === 'release' ? `Release: ${version}` : version;
+                const groupTitle = env === 'release' ? `Release: ${version}` : (env === 'prerelease' ? `Pre Release: ${version}` : version);
                 html += `
                     <div class="report-group">
                         <div class="group-header">${groupTitle}</div>
                 `;
 
                 grouped[groupKey].forEach(report => {
+                    const badgeLabel = report.environment === 'release' ? 'Release' : (report.environment === 'prerelease' ? 'Pre Release' : 'Develop');
                     html += `
                         <div class="report-card ${report.environment}" onclick="openReport('${report.path}')">
                             <div class="report-header">
                                 <div>
                                     <div class="report-title">${report.displayName}</div>
                                 </div>
-                                <span class="report-badge badge-${report.environment}">${report.environment === 'release' ? 'Release' : (report.environment === 'prerelease' ? 'Pre Release' : 'Develop')}</span>
+                                <span class="report-badge badge-${report.environment}">${badgeLabel}</span>
                             </div>
                             <div class="report-meta">
                                 <div class="meta-item">
