@@ -108,7 +108,7 @@ jobs:
 
           if [ -f CoreSanity_SchemaValidation_result_report.html ]; then
             echo "Adding Core Sanity report to deployment"
-            cp CoreSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/scan_results.json
+            cp CoreSanity_SchemaValidation_result_report.html ${{ steps.resolve_result_dir.outputs.result_dir }}/CoreSanity_SchemaValidation_result_report.html
             git add ${{ steps.resolve_result_dir.outputs.result_dir }}/CoreSanity_SchemaValidation_result_report.html
           fi
 
