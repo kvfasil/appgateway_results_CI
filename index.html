@@ -790,8 +790,9 @@
         // Fetch directory listing (simplified - will need manual configuration)
         async function fetchDirectoryListing(path) {
             const structure = {
-                'develop': ["RDKEMW-0003"],
+                'develop': ["RDKEMW-0003", "RDKEMW-0004"],
                 'develop/RDKEMW-0003': ["unknown"],
+                'develop/RDKEMW-0004': ["unknown"],
                 'prerelease': ["0.0.2.0"],
                 'prerelease/0.0.2.0': ["unknown"],
                 'release': ["0.0.2.0"],
@@ -805,6 +806,7 @@
         async function fetchFileListing(path) {
             const fileStructure = {
                 'develop/RDKEMW-0003/unknown': ["BadgerSanity_SchemaValidation_result_report.html", "CoreSanity_SchemaValidation_result_report.html"],
+                'develop/RDKEMW-0004/unknown': ["BadgerSanity_SchemaValidation_result_report.html", "CoreSanity_SchemaValidation_result_report.html"],
                 'prerelease/0.0.2.0/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
                 'release/0.0.2.0/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
             };
