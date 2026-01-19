@@ -1,0 +1,461 @@
+{
+  "suite_name": "Complete Firebolt Schema Validation Test Suite",
+  "total_tests": 10,
+  "passed": 8,
+  "failed": 2,
+  "skipped": 0,
+  "duration_ms": 7194,
+  "test_results": [
+    {
+      "test_id": "ACCESSIBILITY001",
+      "test_name": "Accessibility.closedCaptions Schema Validation — Getting the closed captions settings",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK001",
+          "description": "Call Accessibility.closedCaptions",
+          "status": "Success",
+          "request": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.closedCaptions",
+            "params": {}
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "enabled": true,
+              "preferredLanguages": [
+                "eng"
+              ],
+              "styles": {}
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true,
+                "preferredLanguages": [
+                  "eng",
+                  "spa"
+                ],
+                "styles": {
+                  "backgroundColor": "#000000",
+                  "backgroundOpacity": 100,
+                  "fontColor": "#ffffff",
+                  "fontEdge": "none",
+                  "fontEdgeColor": "#7F7F7F",
+                  "fontFamily": "monospaced_sanserif",
+                  "fontOpacity": 100,
+                  "fontSize": 1,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "windowColor": "white",
+                  "windowOpacity": 50
+                }
+              },
+              "name": "Getting the closed captions settings",
+              "params": {}
+            }
+          ],
+          "duration_ms": 261
+        }
+      ],
+      "duration_ms": 261
+    },
+    {
+      "test_id": "ACCESSIBILITY002",
+      "test_name": "Accessibility.closedCaptionsSettings Schema Validation — Getting the closed captions settings",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK002",
+          "description": "Call Accessibility.closedCaptionsSettings",
+          "status": "Success",
+          "request": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.closedCaptionsSettings",
+            "params": {}
+          },
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "enabled": true,
+              "preferredLanguages": [
+                "eng"
+              ],
+              "styles": {}
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true,
+                "preferredLanguages": [
+                  "eng",
+                  "spa"
+                ],
+                "styles": {
+                  "backgroundColor": "#000000",
+                  "backgroundOpacity": 100,
+                  "fontColor": "#ffffff",
+                  "fontEdge": "none",
+                  "fontEdgeColor": "#7F7F7F",
+                  "fontFamily": "monospaced_sanserif",
+                  "fontOpacity": 100,
+                  "fontSize": 1,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "windowColor": "white",
+                  "windowOpacity": 50
+                }
+              },
+              "name": "Getting the closed captions settings",
+              "params": {}
+            }
+          ],
+          "duration_ms": 223
+        }
+      ],
+      "duration_ms": 223
+    },
+    {
+      "test_id": "ACCESSIBILITY003",
+      "test_name": "Accessibility.highContrastUI Schema Validation — High-contrast UI mode is enabled",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK003",
+          "description": "Call Accessibility.highContrastUI",
+          "status": "Success",
+          "request": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.highContrastUI",
+            "params": {}
+          },
+          "response": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": true
+          },
+          "examples": [
+            {
+              "expected_result": true,
+              "name": "High-contrast UI mode is enabled",
+              "params": {}
+            }
+          ],
+          "duration_ms": 116
+        }
+      ],
+      "duration_ms": 116
+    },
+    {
+      "test_id": "ACCESSIBILITY004",
+      "test_name": "Accessibility.voiceGuidance Schema Validation — Getting the voice guidance settings",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK004",
+          "description": "Call Accessibility.voiceGuidance",
+          "status": "Success",
+          "request": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.voiceGuidance",
+            "params": {}
+          },
+          "response": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "result": {
+              "enabled": true,
+              "navigationHints": true,
+              "rate": 1,
+              "speed": 1
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true,
+                "navigationHints": true,
+                "rate": 1
+              },
+              "name": "Getting the voice guidance settings",
+              "params": {}
+            }
+          ],
+          "duration_ms": 176
+        }
+      ],
+      "duration_ms": 176
+    },
+    {
+      "test_id": "ACCESSIBILITY005",
+      "test_name": "Accessibility.voiceGuidanceSettings Schema Validation — Getting the voice guidance settings",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK005",
+          "description": "Call Accessibility.voiceGuidanceSettings",
+          "status": "Success",
+          "request": {
+            "id": 5,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.voiceGuidanceSettings",
+            "params": {}
+          },
+          "response": {
+            "id": 5,
+            "jsonrpc": "2.0",
+            "result": {
+              "enabled": true,
+              "navigationHints": true,
+              "rate": 1,
+              "speed": 1
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true,
+                "navigationHints": true,
+                "rate": 1
+              },
+              "name": "Getting the voice guidance settings",
+              "params": {}
+            }
+          ],
+          "duration_ms": 155
+        }
+      ],
+      "duration_ms": 155
+    },
+    {
+      "test_id": "ACCESSIBILITY006",
+      "test_name": "Accessibility.audioDescriptionSettings Schema Validation — Getting the audio description settings",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK006",
+          "description": "Call Accessibility.audioDescriptionSettings",
+          "status": "Failed",
+          "request": {
+            "id": 6,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.audioDescriptionSettings",
+            "params": {}
+          },
+          "response": {
+            "error": {
+              "code": -32100,
+              "message": "couldnt get audio description settings"
+            },
+            "id": 6,
+            "jsonrpc": "2.0"
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true
+              },
+              "name": "Getting the audio description settings",
+              "params": {}
+            }
+          ],
+          "error": "Schema validation failed: Validation Error: Schema validation error: Invalid value: JSON-RPC error response: {\"code\":-32100,\"message\":\"couldnt get audio description settings\"}",
+          "duration_ms": 122
+        }
+      ],
+      "duration_ms": 122
+    },
+    {
+      "test_id": "ACCESSIBILITY007",
+      "test_name": "Accessibility.onClosedCaptionsSettingsChanged Schema Validation — Getting the closed captions settings",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK007",
+          "description": "Subscribe and listen for Accessibility.onClosedCaptionsSettingsChanged",
+          "status": "Success",
+          "request": {
+            "id": 7,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.onClosedCaptionsSettingsChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 7,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "accessibility.onClosedCaptionsSettingsChanged",
+              "listening": true
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true,
+                "preferredLanguages": [
+                  "eng",
+                  "spa"
+                ],
+                "styles": {
+                  "backgroundColor": "#000000",
+                  "backgroundOpacity": 100,
+                  "fontColor": "#ffffff",
+                  "fontEdge": "none",
+                  "fontEdgeColor": "#7F7F7F",
+                  "fontFamily": "monospaced_sanserif",
+                  "fontOpacity": 100,
+                  "fontSize": 1,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "windowColor": "white",
+                  "windowOpacity": 50
+                }
+              },
+              "name": "Getting the closed captions settings",
+              "params": {
+                "listen": true
+              }
+            }
+          ],
+          "duration_ms": 127
+        }
+      ],
+      "duration_ms": 127
+    },
+    {
+      "test_id": "ACCESSIBILITY008",
+      "test_name": "Accessibility.onHighContrastUIChanged Schema Validation — High-contrast UI mode is enabled",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK008",
+          "description": "Subscribe and listen for Accessibility.onHighContrastUIChanged",
+          "status": "Success",
+          "request": {
+            "id": 8,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.onHighContrastUIChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 8,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "accessibility.onHighContrastUIChanged",
+              "listening": true
+            }
+          },
+          "examples": [
+            {
+              "expected_result": true,
+              "name": "High-contrast UI mode is enabled",
+              "params": {
+                "listen": true
+              }
+            }
+          ],
+          "duration_ms": 2022
+        }
+      ],
+      "duration_ms": 2022
+    },
+    {
+      "test_id": "ACCESSIBILITY009",
+      "test_name": "Accessibility.onVoiceGuidanceSettingsChanged Schema Validation — Getting the voice guidance settings",
+      "status": "Passed",
+      "steps": [
+        {
+          "step_id": "TASK009",
+          "description": "Subscribe and listen for Accessibility.onVoiceGuidanceSettingsChanged",
+          "status": "Success",
+          "request": {
+            "id": 9,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.onVoiceGuidanceSettingsChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "id": 9,
+            "jsonrpc": "2.0",
+            "result": {
+              "event": "accessibility.onVoiceGuidanceSettingsChanged",
+              "listening": true
+            }
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true,
+                "navigationHints": true,
+                "rate": 1
+              },
+              "name": "Getting the voice guidance settings",
+              "params": {
+                "listen": true
+              }
+            }
+          ],
+          "duration_ms": 1993
+        }
+      ],
+      "duration_ms": 1993
+    },
+    {
+      "test_id": "ACCESSIBILITY010",
+      "test_name": "Accessibility.onAudioDescriptionSettingsChanged Schema Validation — Getting the audio description settings",
+      "status": "Failed",
+      "steps": [
+        {
+          "step_id": "TASK010",
+          "description": "Subscribe and listen for Accessibility.onAudioDescriptionSettingsChanged",
+          "status": "Failed",
+          "request": {
+            "id": 10,
+            "jsonrpc": "2.0",
+            "method": "Accessibility.onAudioDescriptionSettingsChanged",
+            "params": {
+              "listen": true
+            }
+          },
+          "response": {
+            "error": {
+              "code": -32001,
+              "message": "mock data for request:org.rdk.UserSettings.register , params: Some(Object {\"event\": String(\"onAudioDescriptionChanged\"), \"id\": String(\"249\")}) not found"
+            },
+            "id": 10,
+            "jsonrpc": "2.0"
+          },
+          "examples": [
+            {
+              "expected_result": {
+                "enabled": true
+              },
+              "name": "Getting the audio description settings",
+              "params": {
+                "listen": true
+              }
+            }
+          ],
+          "error": "Schema validation failed: Validation Error: Schema validation error: Invalid value: JSON-RPC error response: {\"code\":-32001,\"message\":\"mock data for request:org.rdk.UserSettings.register , params: Some(Object {\\\"event\\\": String(\\\"onAudioDescriptionChanged\\\"), \\\"id\\\": String(\\\"249\\\")}) not found\"}",
+          "duration_ms": 1995
+        }
+      ],
+      "duration_ms": 1995
+    }
+  ]
+}
