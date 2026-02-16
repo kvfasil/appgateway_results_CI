@@ -58,16 +58,10 @@ jobs:
           echo "[ERROR]: No artifacts/ directory found"
           exit 1
         }
-  
-        # Unified selection: pick newest by filename timestamp regardless of type
-        LATEST_NAME=$(ls artifacts/*.tar.gz 2>/dev/null | sed 's#.*/##' | grep -E '^[^_]+_[0-9]{8}_[0-9]{6}\.tar\.gz$' | sort -t'_' -k2,2 -k3,3 | tail -n1 || true)
-        if [ -n "$LATEST_NAME" ]; then
-          LATEST_ARTIFACT="artifacts/$LATEST_NAME"
-          LATEST_TYPE=$(echo "$LATEST_NAME" | cut -d'_' -f1)
-          echo "[INFO] Selected $LATEST_TYPE artifact: $LATEST_ARTIFACT"
-        else
-          LATEST_ARTIFACT=""
-        fi
+
+        LATEST_ARTIFACT="artifacts/$LATEST_NAME"
+        LATEST_TYPE=$(echo "$LATEST_NAME" | cut -d'_' -f1)
+        echo "[INFO] Selected $LATEST_TYPE artifact: $LATEST_ARTIFACT"
 
         if [ -z "$LATEST_ARTIFACT" ]; then
           echo "[ERROR]: No artifact tarball found under artifacts/"
@@ -124,7 +118,7 @@ jobs:
           echo "[INFO] Artifact type is develop; using develop directory structure"
           SUB_ROOT_DIR="$BRANCH"
         else
-          ROOT_DIR="prerelease"
+          ROOT_DIR="release"
           echo "[INFO] Artifact type is release; using release directory structure"
 
           # grep APPGATEWAY_VERSION from version.txt if present eg:"APPGATEWAY_VERSION=$RELEASE_VERSION"
@@ -142,12 +136,17 @@ jobs:
           fi
 
           SUB_ROOT_DIR=$RELEASE_VERSION
-
         fi
 
         RESULT_DIR="$ROOT_DIR/$SUB_ROOT_DIR/$PROPOSITION/"
+        if [ -d "$RESULT_DIR" ]; then
+          echo "[INFO] Result directory $RESULT_DIR already exists; new files will be added under timestamped subdirectory"
+        else
+          echo "[INFO] Creating result directory: $RESULT_DIR"
+          mkdir -p "$RESULT_DIR"
+        fi
         TARGET_DIR="$ROOT_DIR/$SUB_ROOT_DIR/$PROPOSITION/$TIMESTAMP"
-        mkdir -p "$RESULT_DIR" "$TARGET_DIR"
+        mkdir -p "$TARGET_DIR"
         cp -r extracted/* "$TARGET_DIR/"
 
         rm -rf artifacts || true  # Clean up artifacts to save space
@@ -179,4 +178,47 @@ jobs:
           echo "✅ Extracted files pushed to branch $BRANCH under $RESULT_DIR using git"
         else
           echo "[INFO] No changes to commit; skipping push"
+        fi
+
+
+# add final step if above steps are successful: create a PR and merge the changes into webpage named branch, then delete current branch
+    - name: Create PR and merge to webpage branch, then delete current branch (with retry)
+      if: ${{ success() }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: ${{ github.ref_name }}
+      run: |
+        set -euo pipefail
+        MAX_RETRIES=2
+        RETRY_DELAY=30
+        COUNT=0
+        SUCCESS=0
+        while [ $COUNT -lt $MAX_RETRIES ]; do
+          echo "[INFO] Attempt $((COUNT+1)) to merge $BRANCH into webpage"
+          git fetch origin webpage || git checkout -b webpage
+          git checkout webpage || git checkout -b webpage
+          git pull origin webpage || true
+          if git merge --no-ff "$BRANCH" -m "Merge $BRANCH into webpage"; then
+            if git push origin webpage; then
+              SUCCESS=1
+              break
+            else
+              echo "[WARN] Push failed, will retry after $RETRY_DELAY seconds"
+            fi
+          else
+            echo "[WARN] Merge failed, will retry after $RETRY_DELAY seconds"
+            git merge --abort || true
+          fi
+          COUNT=$((COUNT+1))
+          sleep $RETRY_DELAY
+        done
+        if [ $SUCCESS -eq 1 ]; then
+          # Delete the source branch from remote if not protected
+          if [ "$BRANCH" != "webpage" ]; then
+            git push origin --delete "$BRANCH" || echo "[WARN] Could not delete branch $BRANCH (may be protected)"
+          fi
+          echo "✅ Merged $BRANCH into webpage and deleted $BRANCH"
+        else
+          echo "❌ Failed to merge $BRANCH into webpage after $MAX_RETRIES attempts. Manual intervention required."
+          exit 1
         fi
