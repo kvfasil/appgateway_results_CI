@@ -187,8 +187,15 @@ jobs:
           echo "[INFO] No changes to commit; skipping push"
         fi
 
+    # add job to remove env_variables.txt
+    - name: Clean up env_variables.txt
+      if: ${{ success() }}
+      run: |
+        if [ -f env_variables.txt ]; then
+          rm env_variables.txt || echo "[WARN] Could not delete env_variables.txt"
+        fi
 
-# add final step if above steps are successful: create a PR and merge the changes into webpage named branch, then delete current branch
+    # add final step if above steps are successful: create a PR and merge the changes into webpage named branch, then delete current branch
     - name: Create PR and merge to webpage branch, then delete current branch (with retry)
       if: ${{ success() }}
       env:
