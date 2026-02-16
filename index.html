@@ -790,9 +790,10 @@
         // Fetch directory listing (simplified - will need manual configuration)
         async function fetchDirectoryListing(path) {
             const structure = {
-                'develop': ["RDKEMW-0003", "RDKEMW-0004"],
+                'develop': ["RDKEMW-0003", "RDKEMW-0004", "RDKEMW-11111"],
                 'develop/RDKEMW-0003': ["unknown"],
                 'develop/RDKEMW-0004': ["unknown"],
+                'develop/RDKEMW-11111': ["SCXI11BEI"],
                 'prerelease': ["0.0.0.0", "0.0.0.1", "0.0.2.0"],
                 'prerelease/0.0.0.0': ["SCXI11BEI"],
                 'prerelease/0.0.0.1': ["SCXI11BEI"],
@@ -809,6 +810,7 @@
             const fileStructure = {
                 'develop/RDKEMW-0003/unknown': ["BadgerSanity_SchemaValidation_result_report.html", "CoreSanity_SchemaValidation_result_report.html"],
                 'develop/RDKEMW-0004/unknown': ["BadgerSanity_SchemaValidation_result_report.html", "CoreSanity_SchemaValidation_result_report.html"],
+                'develop/RDKEMW-11111/SCXI11BEI': ["BadgerSanity_SchemaValidation_result_report.html", "CoreSanity_SchemaValidation_result_report.html"],
                 'prerelease/0.0.0.0/SCXI11BEI': ["BadgerSanity_SchemaValidation_result_report.html", "CoreSanity_SchemaValidation_result_report.html"],
                 'prerelease/0.0.0.1/SCXI11BEI': ["BadgerSanity_SchemaValidation_result_report.html", "CoreSanity_SchemaValidation_result_report.html"],
                 'prerelease/0.0.2.0/unknown': ["CoreSanity_SchemaValidation_result_report.html"],
