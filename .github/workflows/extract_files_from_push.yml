@@ -59,6 +59,13 @@ jobs:
           exit 1
         }
 
+        # Find the latest artifact tar.gz file
+        LATEST_NAME=$(ls -1 artifacts/*.tar.gz 2>/dev/null | sort | tail -n1 | xargs -n1 basename)
+        if [ -z "$LATEST_NAME" ]; then
+          echo "[ERROR]: No artifact tarball found under artifacts/"
+          exit 1
+        fi
+
         LATEST_ARTIFACT="artifacts/$LATEST_NAME"
         LATEST_TYPE=$(echo "$LATEST_NAME" | cut -d'_' -f1)
         echo "[INFO] Selected $LATEST_TYPE artifact: $LATEST_ARTIFACT"
