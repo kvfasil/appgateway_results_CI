@@ -25,9 +25,18 @@ jobs:
         id: changes
         run: |
           git fetch origin webpage
-          LAST_MERGE=$(git log --merges -n 1 --pretty=format:"%H" webpage)
+          # Find the latest merge commit on the branch
+          LAST_MERGE=$(git log --merges --pretty=format:"%H" -n 1 webpage)
+          if [ -z "$LAST_MERGE" ]; then
+            echo "No merge commit found. Using latest commit."
+            LAST_MERGE=$(git rev-parse webpage)
+          fi
           echo "last_merge_commit=$LAST_MERGE" >> $GITHUB_OUTPUT
+          # List changed files for the merge commit
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $LAST_MERGE)
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed files found for commit $LAST_MERGE."
+          fi
           echo "$CHANGED_FILES" > changed_files.txt
           echo "changed_files<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
