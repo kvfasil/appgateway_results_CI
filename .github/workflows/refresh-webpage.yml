@@ -1,9 +1,13 @@
+
 name: Deploy GitHub Pages on Webpage Branch Change
 
+# To enable auto-deploy on every push to webpage branch, uncomment below:
+# on:
+#   push:
+#     branches:
+#       - webpage
 on:
-  push:
-    branches:
-      - webpage
+  workflow_dispatch:
 
 jobs:
   deploy-pages:
