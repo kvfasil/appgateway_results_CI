@@ -247,14 +247,10 @@ jobs:
             git commit -m "Merge $BRANCH into webpage and update web_result HTML after validation"
             git push origin webpage
           fi
+          echo "✅ Html validation reports generated and pushed to webpage"
         else
           echo "[WARN] RESULT_DIR $RESULT_DIR does not exist, skipping validation."
         fi
 
-        # Delete the source branch from remote if not protected
-        if [ "$BRANCH" != "webpage" ]; then
-          git push origin --delete "$BRANCH" || echo "[WARN] Could not delete branch $BRANCH (may be protected)"
-        fi
-        echo "✅ Html validation reports generated and pushed to webpage"
         
 
