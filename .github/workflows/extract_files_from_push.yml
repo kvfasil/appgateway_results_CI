@@ -13,8 +13,6 @@ permissions:
 jobs:
   extract-and-push:
     runs-on: ubuntu-latest
-    # Skip if the push was made by github-actions[bot] to prevent infinite loops
-    if: github.actor != 'github-actions[bot]'
 
     steps:
     - name: Checkout repository
@@ -237,3 +235,34 @@ jobs:
           echo "❌ Failed to merge $BRANCH into webpage after $MAX_RETRIES attempts. Manual intervention required."
           exit 1
         fi
+
+    # trigger webpage merge validation workflow to regenerate reports if the merge commit contains changes to CoreSanity_SchemaValidation_response.json or BadgerSanity_SchemaValidation_response.json
+    # Step: Check if relevant schema files changed in merge commit
+    - name: Check for schema validation file changes
+      id: check_schema_changes
+      run: |
+          set -euo pipefail
+          # Get list of files changed in the last merge commit
+          MERGE_COMMIT=$(git log --merges --pretty=format:'%H' -n 1)
+          if [ -z "$MERGE_COMMIT" ]; then
+            echo "merge_commit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          CHANGED=$(git diff-tree --no-commit-id --name-only -r "$MERGE_COMMIT")
+          if echo "$CHANGED" | grep -qE 'CoreSanity_SchemaValidation_response.json|BadgerSanity_SchemaValidation_response.json'; then
+            echo "merge_commit=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "merge_commit=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Step: Trigger webpage merge validation workflow only if relevant files changed pass the result directly to the workflow dispatch inputs to avoid unnecessary runs
+    - name: Trigger webpage merge validation workflow
+      if: ${{ steps.check_schema_changes.outputs.merge_commit == 'true' && success() }}
+      run: |
+        gh workflow run webpage_merge_validation.yml -r webpage
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        BRANCH: "webpage"  # Pass the webpage branch as input to the workflow"
+        result_dir: ${{ env.RESULT_DIR }}
+        
+
