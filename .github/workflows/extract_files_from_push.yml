@@ -247,7 +247,8 @@ jobs:
         git checkout webpage
         # Only process the latest TIMESTAMP subdirectory in RESULT_DIR
         if [ -d "$RESULT_DIR" ]; then
-          LATEST_TIMESTAMP=$(ls -1d "$RESULT_DIR"/*/ 2>/dev/null | sort | tail -n1 | xargs -n1 basename)
+          LATEST_TIMESTAMP=$(ls -1d "$RESULT_DIR"/*/ 2>/dev/null | grep -v '/web_result/' | sort | tail -n1 | xargs -n1 basename)
+          echo "[INFO] Latest timestamp directory: $LATEST_TIMESTAMP"
           if [ -z "$LATEST_TIMESTAMP" ]; then
             echo "[WARN] No TIMESTAMP subdirectory found in $RESULT_DIR, skipping validation."
             exit 0
@@ -258,10 +259,12 @@ jobs:
           # Generate Firebolt Core Sanity HTML if present
           if [ -f "$TIMESTAMP_DIR/CoreSanity_SchemaValidation_response.json" ]; then
             python3 .github/scripts/generate_core_sanity_report_js.py "$TIMESTAMP_DIR/CoreSanity_SchemaValidation_response.json"
+            echo "[INFO] Generated Core Sanity HTML report"
           fi
           # Generate Badger Sanity HTML if present
           if [ -f "$TIMESTAMP_DIR/BadgerSanity_SchemaValidation_response.json" ]; then
             python3 .github/scripts/generate_badger_sanity_report_js.py "$TIMESTAMP_DIR/BadgerSanity_SchemaValidation_response.json"
+            echo "[INFO] Generated Badger Sanity HTML report"
           fi
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
