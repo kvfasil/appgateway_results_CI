@@ -1,0 +1,30 @@
+{
+  "core_sanity_test": {
+    "result_category": "release",
+    "date": "20260217_134949",
+    "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG",
+    "RDK version": "8.4.4.0",
+    "branch": "0.1.0.0",
+    "proposition": "SCXI11BEI",
+    "result": {
+      "Total": 190,
+      "passed": 12,
+      "failed": 158,
+      "skiped": 20
+    }
+  },
+  "badger_sanity_test": {
+    "result_category": "release",
+    "date": "20260217_134949",
+    "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG",
+    "RDK version": "8.4.4.0",
+    "branch": "0.1.0.0",
+    "proposition": "SCXI11BEI",
+    "result": {
+      "Total": 54,
+      "passed": 2,
+      "failed": 52,
+      "skiped": 0
+    }
+  }
+}
