@@ -195,56 +195,28 @@ jobs:
         fi
 
 
-    # Merge to webpage branch, then run validation and publish web results
-    - name: Create PR and merge to webpage branch, then delete current branch (with retry)
+
+    # Merge to webpage branch locally, make changes, and do a single commit after validation/publish
+    - name: Merge to webpage branch locally, validate, and single commit
       if: ${{ success() }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: ${{ github.ref_name }}
-      run: |
-        set -euo pipefail
-        MAX_RETRIES=2
-        RETRY_DELAY=30
-        COUNT=0
-        SUCCESS=0
-        while [ $COUNT -lt $MAX_RETRIES ]; do
-          echo "[INFO] Attempt $((COUNT+1)) to merge $BRANCH into webpage"
-          git fetch origin webpage || git checkout -b webpage
-          git checkout webpage || git checkout -b webpage
-          git pull origin webpage || true
-          if git merge --no-ff "$BRANCH" -m "Merge $BRANCH into webpage"; then
-            if git push origin webpage; then
-              SUCCESS=1
-              break
-            else
-              echo "[WARN] Push failed, will retry after $RETRY_DELAY seconds"
-            fi
-          else
-            echo "[WARN] Merge failed, will retry after $RETRY_DELAY seconds"
-            git merge --abort || true
-          fi
-          COUNT=$((COUNT+1))
-          sleep $RETRY_DELAY
-        done
-        if [ $SUCCESS -eq 1 ]; then
-          # Delete the source branch from remote if not protected
-          if [ "$BRANCH" != "webpage" ]; then
-            git push origin --delete "$BRANCH" || echo "[WARN] Could not delete branch $BRANCH (may be protected)"
-          fi
-          echo "✅ Merged $BRANCH into webpage and deleted $BRANCH"
-        else
-          echo "❌ Failed to merge $BRANCH into webpage after $MAX_RETRIES attempts. Manual intervention required."
-          exit 1
-        fi
-
-    # Run validation and publish web results on webpage branch after merge
-    - name: Validate and Publish Web Results on Webpage Branch
-      if: ${{ success() }}
-      env:
         RESULT_DIR: ${{ env.RESULT_DIR }}
       run: |
-        set -e
-        git checkout webpage
+        set -euo pipefail
+        # Checkout webpage branch and merge current branch
+        git fetch origin webpage || git checkout -b webpage
+        git checkout webpage || git checkout -b webpage
+        git pull origin webpage || true
+        git merge --no-ff "$BRANCH" -m "Merge $BRANCH into webpage"
+
+        # Delete the source branch from remote if not protected
+        if [ "$BRANCH" != "webpage" ]; then
+          git push origin --delete "$BRANCH" || echo "[WARN] Could not delete branch $BRANCH (may be protected)"
+          echo "✅ Merged $BRANCH into webpageand deleted $BRANCH"
+        fi
+
         # Only process the latest TIMESTAMP subdirectory in RESULT_DIR
         if [ -d "$RESULT_DIR" ]; then
           LATEST_TIMESTAMP=$(ls -1d "$RESULT_DIR"/*/ 2>/dev/null | grep -v '/web_result/' | sort | tail -n1 | xargs -n1 basename)
@@ -272,11 +244,17 @@ jobs:
           if git diff --cached --quiet; then
             echo "No web_result changes to commit."
           else
-            git commit -m "Update web_result HTML after validation on webpage merge"
+            git commit -m "Merge $BRANCH into webpage and update web_result HTML after validation"
             git push origin webpage
           fi
         else
           echo "[WARN] RESULT_DIR $RESULT_DIR does not exist, skipping validation."
         fi
+
+        # Delete the source branch from remote if not protected
+        if [ "$BRANCH" != "webpage" ]; then
+          git push origin --delete "$BRANCH" || echo "[WARN] Could not delete branch $BRANCH (may be protected)"
+        fi
+        echo "✅ Html validation reports generated and pushed to webpage"
         
 
