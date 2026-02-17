@@ -268,7 +268,7 @@ jobs:
           fi
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add "$RESULT_DIR"/web_result/*.html || true
+          git add "$RESULT_DIR"/web_result/* || true
           if git diff --cached --quiet; then
             echo "No web_result changes to commit."
           else

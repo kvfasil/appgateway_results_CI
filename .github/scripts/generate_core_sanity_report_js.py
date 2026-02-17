@@ -354,7 +354,7 @@ def main():
   # Find version.txt in the same folder as the JSON
   version_txt_path = os.path.join(os.path.dirname(json_path), 'version.txt')
   # The folder name one level above JSON is the timestamp/date
-  folder_name = os.path.basename(os.path.dirname(json_path))
+  folder_name = os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(json_path))))
   platform = parse_version_txt(version_txt_path, folder_name)
   with open(json_path) as f:
     data = json.load(f)
@@ -367,6 +367,56 @@ def main():
   with open(output_html, 'w') as f:
     f.write(html)
   print(f"[SUCCESS] Generated JS-based report: {output_html}")
+
+  # --- Create or update summary.json ---
+  summary_path = os.path.join(output_dir, 'summary.json')
+  # Extract values
+  # Extract values from input path (e.g., develop/RDKEMW-2222/SCXI11BEI/20260217_124421)
+  # json_path: develop/RDKEMW-2222/SCXI11BEI/20260217_124421/CoreSanity_SchemaValidation_response.json
+  path_parts = os.path.normpath(json_path).split(os.sep)
+  # result_category: develop
+  result_category = path_parts[0] if len(path_parts) > 0 else ''
+  # branch: RDKEMW-2222
+  branch = path_parts[1] if len(path_parts) > 1 else ''
+  # proposition: SCXI11BEI
+  proposition = path_parts[2] if len(path_parts) > 2 else ''
+  # date: 20260217_124421
+  date = path_parts[3] if len(path_parts) > 3 else ''
+  image = platform.get('imagename', '')
+  rdk_version = platform.get('MIDDLEWARE_VERSION', '')
+  total = data.get('total_tests', len(data.get('test_results', [])))
+  passed = data.get('passed', 0)
+  failed = data.get('failed', 0)
+  skipped = data.get('skipped', 0)
+
+  core_sanity_test = {
+    'result_category': result_category,
+    'date': date,
+    'image': image,
+    'RDK version': rdk_version,
+    'branch': branch,
+    'proposition': proposition,
+    'result': {
+      'Total': total,
+      'passed': passed,
+      'failed': failed,
+      'skiped': skipped
+    }
+  }
+
+  # Load or create summary.json
+  summary = {}
+  if os.path.isfile(summary_path):
+    try:
+      with open(summary_path) as f:
+        summary = json.load(f)
+    except Exception:
+      summary = {}
+  # Update or add core_sanity_test
+  summary['core_sanity_test'] = core_sanity_test
+  with open(summary_path, 'w') as f:
+    json.dump(summary, f, indent=2)
+  print(f"[SUCCESS] Updated summary.json: {summary_path}")
 
 if __name__ == "__main__":
   main()
