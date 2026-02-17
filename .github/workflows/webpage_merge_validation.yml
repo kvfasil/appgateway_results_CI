@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - webpage
+      - webpage*
+  pull_request:
+    branches:
+      - webpage
+      - webpage*
 
 jobs:
   validate-and-publish:
