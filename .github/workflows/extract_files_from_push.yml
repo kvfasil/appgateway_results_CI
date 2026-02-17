@@ -194,7 +194,8 @@ jobs:
           rm env_variables.txt || echo "[WARN] Could not delete env_variables.txt"
         fi
 
-    # add final step if above steps are successful: create a PR and merge the changes into webpage named branch, then delete current branch
+
+    # Merge to webpage branch, then run validation and publish web results
     - name: Create PR and merge to webpage branch, then delete current branch (with retry)
       if: ${{ success() }}
       env:
@@ -236,14 +237,43 @@ jobs:
           exit 1
         fi
 
-    # # Step: Trigger webpage merge validation workflow only if relevant files changed pass the result directly to the workflow dispatch inputs to avoid unnecessary runs
-    # - name: Trigger webpage merge validation workflow
-    #   if: ${{ success() }}
-    #   run: |
-    #     gh workflow run webpage_merge_validation.yml -r webpage
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-    #     BRANCH: "webpage"  # Pass the webpage branch as input to the workflow"
-    #     result_dir: ${{ env.RESULT_DIR }}
+    # Run validation and publish web results on webpage branch after merge
+    - name: Validate and Publish Web Results on Webpage Branch
+      if: ${{ success() }}
+      env:
+        RESULT_DIR: ${{ env.RESULT_DIR }}
+      run: |
+        set -e
+        git checkout webpage
+        # Only process the latest TIMESTAMP subdirectory in RESULT_DIR
+        if [ -d "$RESULT_DIR" ]; then
+          LATEST_TIMESTAMP=$(ls -1d "$RESULT_DIR"/*/ 2>/dev/null | sort | tail -n1 | xargs -n1 basename)
+          if [ -z "$LATEST_TIMESTAMP" ]; then
+            echo "[WARN] No TIMESTAMP subdirectory found in $RESULT_DIR, skipping validation."
+            exit 0
+          fi
+          TIMESTAMP_DIR="$RESULT_DIR/$LATEST_TIMESTAMP"
+          WEB_RESULT_DIR="$RESULT_DIR/web_result"
+          mkdir -p "$WEB_RESULT_DIR"
+          # Generate Firebolt Core Sanity HTML if present
+          if [ -f "$TIMESTAMP_DIR/CoreSanity_SchemaValidation_response.json" ]; then
+            python3 .github/scripts/generate_core_sanity_report_js.py "$TIMESTAMP_DIR/CoreSanity_SchemaValidation_response.json"
+          fi
+          # Generate Badger Sanity HTML if present
+          if [ -f "$TIMESTAMP_DIR/BadgerSanity_SchemaValidation_response.json" ]; then
+            python3 .github/scripts/generate_badger_sanity_report_js.py "$TIMESTAMP_DIR/BadgerSanity_SchemaValidation_response.json"
+          fi
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add "$RESULT_DIR"/web_result/*.html || true
+          if git diff --cached --quiet; then
+            echo "No web_result changes to commit."
+          else
+            git commit -m "Update web_result HTML after validation on webpage merge"
+            git push origin webpage
+          fi
+        else
+          echo "[WARN] RESULT_DIR $RESULT_DIR does not exist, skipping validation."
+        fi
         
 
