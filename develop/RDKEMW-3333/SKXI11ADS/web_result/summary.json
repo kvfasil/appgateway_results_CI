@@ -1,7 +1,7 @@
 {
   "core_sanity_test": {
     "result_category": "develop",
-    "date": "20260217_194433",
+    "date": "20260217_195736",
     "image": "SKXI11ADS_MIDDLEWARE_DEV_support_8.4.4.0_20260107191706",
     "RDK version": "8.4.4.1",
     "branch": "RDKEMW-3333",
@@ -15,7 +15,7 @@
   },
   "badger_sanity_test": {
     "result_category": "develop",
-    "date": "20260217_194433",
+    "date": "20260217_195736",
     "image": "SKXI11ADS_MIDDLEWARE_DEV_support_8.4.4.0_20260107191706",
     "RDK version": "8.4.4.1",
     "branch": "RDKEMW-3333",
