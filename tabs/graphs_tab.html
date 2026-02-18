@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Graphs</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f7f9; color: #1a2c42; margin: 0; padding: 16px; }
+        h2 { margin-top: 0; color: #1976d2; font-size: 18px; }
+        
+        .filters { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        select { padding: 8px 12px; border: 1px solid #e3e8ee; border-radius: 6px; font-size: 13px; }
+        label { font-size: 13px; font-weight: 600; color: #666; }
+        
+        .checkbox-group { display: flex; gap: 16px; align-items: center; margin-left: 12px; padding-left: 12px; border-left: 1px solid #e3e8ee; }
+        .checkbox-item { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .checkbox-item input { cursor: pointer; }
+        .checkbox-item.passed { color: #4caf50; }
+        .checkbox-item.failed { color: #f44336; }
+        .checkbox-item.skipped { color: #ff9800; }
+        
+        .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .chart-card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .chart-card.full-width { grid-column: 1 / -1; }
+        .chart-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .chart-wrapper { position: relative; height: 280px; }
+        .chart-wrapper.tall { height: 350px; }
+        
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 11px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+        
+        @media (max-width: 900px) {
+            .charts-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <h2>📊 Test Results Over Time</h2>
+    
+    <div class="filters">
+        <label>Test Type:</label>
+        <select id="filterTestType" onchange="updateCharts()">
+            <option value="">All</option>
+            <option value="Core Sanity">Core Sanity</option>
+            <option value="Badger Sanity">Badger Sanity</option>
+        </select>
+        
+        <label>Proposition:</label>
+        <select id="filterProposition" onchange="updateCharts()">
+            <option value="">All</option>
+            <option value="SCXI11BEI">SCXI11BEI</option><option value="SKXI11ADS">SKXI11ADS</option>
+        </select>
+        
+        <div class="checkbox-group">
+            <label class="checkbox-item passed">
+                <input type="checkbox" id="showPassed" checked onchange="updateCharts()"> Passed
+            </label>
+            <label class="checkbox-item failed">
+                <input type="checkbox" id="showFailed" checked onchange="updateCharts()"> Failed
+            </label>
+            <label class="checkbox-item skipped">
+                <input type="checkbox" id="showSkipped" checked onchange="updateCharts()"> Skipped
+            </label>
+        </div>
+    </div>
+    
+    <div class="charts-container">
+        <!-- Develop Line Graph -->
+        <div class="chart-card full-width">
+            <div class="chart-title">📁 Develop - Test Results by Branch (sorted by generation time)</div>
+            <div class="chart-wrapper tall">
+                <canvas id="developChart"></canvas>
+            </div>
+            <div class="legend">
+                <span class="legend-item"><span class="legend-color" style="background:#4caf50"></span> Passed</span>
+                <span class="legend-item"><span class="legend-color" style="background:#f44336"></span> Failed</span>
+                <span class="legend-item"><span class="legend-color" style="background:#ff9800"></span> Skipped</span>
+            </div>
+        </div>
+        
+        <!-- Release Line Graph -->
+        <div class="chart-card full-width">
+            <div class="chart-title">🚀 Release - Test Results by Branch (sorted by generation time)</div>
+            <div class="chart-wrapper tall">
+                <canvas id="releaseChart"></canvas>
+            </div>
+            <div class="legend">
+                <span class="legend-item"><span class="legend-color" style="background:#4caf50"></span> Passed</span>
+                <span class="legend-item"><span class="legend-color" style="background:#f44336"></span> Failed</span>
+                <span class="legend-item"><span class="legend-color" style="background:#ff9800"></span> Skipped</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const allData = [{"category": "release", "branch": "0.2.0.0", "proposition": "SCXI11BEI", "date": "20260217_135418", "test_type": "Core Sanity", "pass_rate": 6.3, "passed": 12, "failed": 158, "skipped": 20, "total": 190}, {"category": "release", "branch": "0.2.0.0", "proposition": "SCXI11BEI", "date": "20260217_135418", "test_type": "Badger Sanity", "pass_rate": 3.7, "passed": 2, "failed": 52, "skipped": 0, "total": 54}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SKXI11ADS", "date": "20260217_135251", "test_type": "Core Sanity", "pass_rate": 6.3, "passed": 12, "failed": 158, "skipped": 20, "total": 190}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SKXI11ADS", "date": "20260217_135251", "test_type": "Badger Sanity", "pass_rate": 3.7, "passed": 2, "failed": 52, "skipped": 0, "total": 54}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SCXI11BEI", "date": "20260217_135251", "test_type": "Core Sanity", "pass_rate": 6.3, "passed": 12, "failed": 158, "skipped": 20, "total": 190}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SCXI11BEI", "date": "20260217_135251", "test_type": "Badger Sanity", "pass_rate": 3.7, "passed": 2, "failed": 52, "skipped": 0, "total": 54}, {"category": "develop", "branch": "RDKEMW-11111", "proposition": "SCXI11BEI", "date": "20260217_135116", "test_type": "Core Sanity", "pass_rate": 6.3, "passed": 12, "failed": 158, "skipped": 20, "total": 190}, {"category": "develop", "branch": "RDKEMW-11111", "proposition": "SCXI11BEI", "date": "20260217_135116", "test_type": "Badger Sanity", "pass_rate": 3.7, "passed": 2, "failed": 52, "skipped": 0, "total": 54}, {"category": "release", "branch": "0.1.0.0", "proposition": "SKXI11ADS", "date": "20260217_134949", "test_type": "Core Sanity", "pass_rate": 6.3, "passed": 12, "failed": 158, "skipped": 20, "total": 190}, {"category": "release", "branch": "0.1.0.0", "proposition": "SCXI11BEI", "date": "20260217_134949", "test_type": "Core Sanity", "pass_rate": 6.3, "passed": 12, "failed": 158, "skipped": 20, "total": 190}, {"category": "release", "branch": "0.1.0.0", "proposition": "SKXI11ADS", "date": "web_result", "test_type": "Badger Sanity", "pass_rate": 0, "passed": 0, "failed": 0, "skipped": 0, "total": 0}, {"category": "release", "branch": "0.1.0.0", "proposition": "SCXI11BEI", "date": "web_result", "test_type": "Badger Sanity", "pass_rate": 0, "passed": 0, "failed": 0, "skipped": 0, "total": 0}];
+        
+        // Parse date string to Date object
+        function parseDate(dateStr) {
+            if (!dateStr || dateStr.length < 8) return new Date();
+            const year = parseInt(dateStr.substring(0, 4));
+            const month = parseInt(dateStr.substring(4, 6)) - 1;
+            const day = parseInt(dateStr.substring(6, 8));
+            const hour = dateStr.length >= 11 ? parseInt(dateStr.substring(9, 11)) : 0;
+            const min = dateStr.length >= 13 ? parseInt(dateStr.substring(11, 13)) : 0;
+            return new Date(year, month, day, hour, min);
+        }
+        
+        // Format date for display
+        function formatDate(dateStr) {
+            const d = parseDate(dateStr);
+            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        
+        // Color palette
+        const colors = [
+            '#1976d2', '#43a047', '#e53935', '#fb8c00', '#8e24aa',
+            '#00acc1', '#3949ab', '#7cb342', '#f4511e', '#6d4c41'
+        ];
+        
+        let developChart, releaseChart;
+        
+        function createCategoryLineChart(category, canvasId, chartRef) {
+            const testType = document.getElementById('filterTestType').value;
+            const proposition = document.getElementById('filterProposition').value;
+            let data = allData.filter(d => d.category === category);
+            if (testType) data = data.filter(d => d.test_type === testType);
+            if (proposition) data = data.filter(d => d.proposition === proposition);
+            
+            // Group by branch, aggregate passed/failed/skipped, track latest date for sorting
+            const branchMap = {};
+            data.forEach(d => {
+                if (!branchMap[d.branch]) {
+                    branchMap[d.branch] = { passed: 0, failed: 0, skipped: 0, latestDate: d.date };
+                }
+                branchMap[d.branch].passed += d.passed;
+                branchMap[d.branch].failed += d.failed;
+                branchMap[d.branch].skipped += d.skipped;
+                if (d.date > branchMap[d.branch].latestDate) {
+                    branchMap[d.branch].latestDate = d.date;
+                }
+            });
+            
+            // Sort branches by latest date (oldest first, so most recent on right)
+            const sortedBranches = Object.keys(branchMap).sort((a, b) => 
+                branchMap[a].latestDate.localeCompare(branchMap[b].latestDate)
+            );
+            
+            const passedData = sortedBranches.map(b => branchMap[b].passed);
+            const failedData = sortedBranches.map(b => branchMap[b].failed);
+            const skippedData = sortedBranches.map(b => branchMap[b].skipped);
+            
+            // Check which datasets to show
+            const showPassed = document.getElementById('showPassed').checked;
+            const showFailed = document.getElementById('showFailed').checked;
+            const showSkipped = document.getElementById('showSkipped').checked;
+            
+            const datasets = [];
+            if (showPassed) {
+                datasets.push({
+                    label: 'Passed',
+                    data: passedData,
+                    borderColor: '#4caf50',
+                    backgroundColor: '#4caf5033',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#4caf50'
+                });
+            }
+            if (showFailed) {
+                datasets.push({
+                    label: 'Failed',
+                    data: failedData,
+                    borderColor: '#f44336',
+                    backgroundColor: '#f4433633',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#f44336'
+                });
+            }
+            if (showSkipped) {
+                datasets.push({
+                    label: 'Skipped',
+                    data: skippedData,
+                    borderColor: '#ff9800',
+                    backgroundColor: '#ff980033',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#ff9800'
+                });
+            }
+            
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (chartRef) chartRef.destroy();
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedBranches,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Branch (sorted by generation time →)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Test Count' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                afterTitle: (ctx) => {
+                                    const branch = ctx[0].label;
+                                    const info = branchMap[branch];
+                                    return `Generated: ${formatDate(info.latestDate)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateCharts() {
+            developChart = createCategoryLineChart('develop', 'developChart', developChart);
+            releaseChart = createCategoryLineChart('release', 'releaseChart', releaseChart);
+        }
+        
+        // Initial render
+        updateCharts();
+    </script>
+</body>
+</html>
