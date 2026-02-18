@@ -1,0 +1,30 @@
+{
+  "core_sanity_test": {
+    "result_category": "develop",
+    "date": "20260217_194433",
+    "image": "SKXI11ADS_MIDDLEWARE_DEV_support_8.4.4.0_20260107191706",
+    "RDK version": "8.4.4.1",
+    "branch": "RDKEMW-3333",
+    "proposition": "SKXI11ADS",
+    "result": {
+      "Total": 190,
+      "passed": 12,
+      "failed": 158,
+      "skiped": 20
+    }
+  },
+  "badger_sanity_test": {
+    "result_category": "develop",
+    "date": "20260217_194433",
+    "image": "SKXI11ADS_MIDDLEWARE_DEV_support_8.4.4.0_20260107191706",
+    "RDK version": "8.4.4.1",
+    "branch": "RDKEMW-3333",
+    "proposition": "SKXI11ADS",
+    "result": {
+      "Total": 54,
+      "passed": 2,
+      "failed": 52,
+      "skiped": 0
+    }
+  }
+}
