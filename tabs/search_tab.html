@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Reports</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f7f9; color: #1a2c42; margin: 0; padding: 12px; }
+        h2 { margin-top: 0; margin-bottom: 12px; color: #1976d2; font-size: 18px; }
+        
+        /* Latest Section */
+        .latest-section { display: flex; gap: 12px; margin-bottom: 12px; }
+        .latest-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .latest-header h3 { margin: 0; color: #1976d2; font-size: 14px; }
+        .latest-prop-select { padding: 4px 8px; border: 1px solid #e3e8ee; border-radius: 4px; font-size: 11px; background: white; }
+        .latest-card { flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .latest-card.release { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .latest-card h3 { margin: 0 0 6px 0; font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .latest-card .branch-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .latest-card .test-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .latest-card .test-row:last-child { border-bottom: none; }
+        .latest-card .test-name { font-size: 12px; opacity: 0.9; }
+        .latest-card .test-rate { font-size: 14px; font-weight: 700; }
+        .latest-card .test-rate.high { color: #90EE90; }
+        .latest-card .test-rate.low { color: #FFB6C1; }
+        .latest-card a { color: white; text-decoration: underline; font-size: 11px; }
+        
+        /* Search & Filters */
+        .search-filters { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px; }
+        .search-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .search-input { flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid #e3e8ee; border-radius: 6px; font-size: 13px; transition: border-color 0.2s; }
+        .search-input:focus { outline: none; border-color: #1976d2; }
+        select { padding: 8px 10px; border: 1px solid #e3e8ee; border-radius: 6px; font-size: 12px; background: white; cursor: pointer; min-width: 120px; }
+        select:focus { outline: none; border-color: #1976d2; }
+        
+        /* Quick Filters */
+        .quick-filters { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .quick-btn { padding: 4px 10px; border: none; border-radius: 12px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .quick-btn.all { background: #e3f2fd; color: #1976d2; }
+        .quick-btn.passed { background: #e8f5e9; color: #2e7d32; }
+        .quick-btn.failed { background: #ffebee; color: #c62828; }
+        .quick-btn.develop { background: #ede7f6; color: #5e35b1; }
+        .quick-btn.release { background: #e0f2f1; color: #00695c; }
+        .quick-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .quick-btn.active { box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        
+        /* Results Count & Sort */
+        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .results-count { color: #666; font-size: 12px; }
+        .sort-select { padding: 6px 10px; border: 1px solid #e3e8ee; border-radius: 4px; font-size: 11px; }
+        
+        /* Results Grid */
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+        .result-card { background: white; border-radius: 8px; padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; }
+        .result-card:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .result-title { font-size: 14px; font-weight: 600; color: #1976d2; margin: 0; }
+        .result-title a { color: inherit; text-decoration: none; }
+        .result-title a:hover { text-decoration: underline; }
+        .badge { padding: 2px 6px; border-radius: 8px; font-size: 9px; font-weight: 600; text-transform: uppercase; }
+        .badge.develop { background: #ede7f6; color: #5e35b1; }
+        .badge.release { background: #e0f2f1; color: #00695c; }
+        .badge.coresanity { background: #fff3e0; color: #e65100; }
+        .badge.badgersanity { background: #e1f5fe; color: #0277bd; }
+        
+        /* Test Section */
+        .test-section { margin: 8px 0; padding: 8px; background: #fafafa; border-radius: 6px; border-left: 3px solid #1976d2; }
+        .test-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .pass-rate-inline { font-weight: 700; font-size: 12px; }
+        .pass-rate-inline.high { color: #2e7d32; }
+        .pass-rate-inline.medium { color: #e65100; }
+        .pass-rate-inline.low { color: #c62828; }
+        .view-link { font-size: 10px; color: #1976d2; text-decoration: none; margin-left: auto; }
+        .view-link:hover { text-decoration: underline; }
+        
+        .result-meta { display: flex; gap: 12px; margin-bottom: 6px; font-size: 11px; color: #666; }
+        .result-meta span { display: flex; align-items: center; gap: 2px; }
+        
+        /* Progress Bar */
+        .progress-container { margin-top: 6px; }
+        .progress-bar { height: 6px; background: #e3e8ee; border-radius: 3px; overflow: hidden; display: flex; }
+        .progress-passed { background: #4caf50; }
+        .progress-failed { background: #f44336; }
+        .progress-skipped { background: #ff9800; }
+        .progress-stats { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; }
+        .stat-passed { color: #4caf50; }
+        .stat-failed { color: #f44336; }
+        .stat-skipped { color: #ff9800; }
+        
+        /* Details Section */
+        .result-details { margin-top: 6px; padding-top: 6px; border-top: 1px solid #e3e8ee; font-size: 10px; }
+        .detail-row { display: flex; margin-bottom: 2px; }
+        .detail-label { width: 70px; color: #888; }
+        .detail-value { color: #333; word-break: break-all; flex: 1; }
+        
+        /* Pass Rate Circle */
+        .pass-rate { width: 44px; height: 44px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+        .pass-rate.high { background: #e8f5e9; color: #2e7d32; }
+        .pass-rate.medium { background: #fff3e0; color: #e65100; }
+        .pass-rate.low { background: #ffebee; color: #c62828; }
+        .pass-rate span { font-size: 8px; font-weight: 400; }
+        
+        /* No Results */
+        .no-results { text-align: center; padding: 40px; color: #888; }
+        
+        /* Actions */
+        .result-actions { margin-top: 6px; display: flex; gap: 4px; }
+        .action-btn { padding: 4px 8px; border: 1px solid #e3e8ee; border-radius: 4px; font-size: 10px; cursor: pointer; background: white; color: #666; transition: all 0.2s; }
+        .action-btn:hover { background: #f4f7f9; border-color: #1976d2; color: #1976d2; }
+    </style>
+</head>
+<body>
+    <h2>🔍 Search Reports</h2>
+    
+    <!-- Latest Section -->
+    <div class="latest-header">
+        <h3>📌 Latest Reports</h3>
+        <select id="latestProposition" class="latest-prop-select" onchange="renderLatest()">
+            <option value="SCXI11BEI">SCXI11BEI</option>
+<option value="SKXI11ADS" selected>SKXI11ADS</option>
+        </select>
+    </div>
+    <div class="latest-section">
+        <div class="latest-card develop">
+            <h3>📁 Latest Develop</h3>
+            <div id="latest-develop">Loading...</div>
+        </div>
+        <div class="latest-card release">
+            <h3>🚀 Latest Release</h3>
+            <div id="latest-release">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Search & Filters -->
+    <div class="search-filters">
+        <div class="search-row">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by branch, proposition, image...">
+            <select id="filterProposition">
+                <option value="">All Propositions</option>
+                <option value="SCXI11BEI">SCXI11BEI</option><option value="SKXI11ADS">SKXI11ADS</option>
+            </select>
+            <select id="filterTestType">
+                <option value="">All Test Types</option>
+                <option value="Badger Sanity">Badger Sanity</option><option value="Core Sanity">Core Sanity</option>
+            </select>
+            <select id="filterCategory">
+                <option value="">All Categories</option>
+                <option value="develop">Develop</option>
+                <option value="release">Release</option>
+            </select>
+        </div>
+        <div class="quick-filters">
+            <button class="quick-btn all active" onclick="quickFilter('all')">All</button>
+            <button class="quick-btn passed" onclick="quickFilter('passed')">✓ High Pass Rate (&gt;80%)</button>
+            <button class="quick-btn failed" onclick="quickFilter('failed')">✗ Low Pass Rate (&lt;50%)</button>
+            <button class="quick-btn develop" onclick="quickFilter('develop')">Develop Only</button>
+            <button class="quick-btn release" onclick="quickFilter('release')">Release Only</button>
+        </div>
+    </div>
+    
+    <!-- Results Header -->
+    <div class="results-header">
+        <span class="results-count" id="resultsCount">Loading...</span>
+        <select class="sort-select" id="sortSelect" onchange="sortResults()">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="pass-desc">Highest Pass Rate</option>
+            <option value="pass-asc">Lowest Pass Rate</option>
+            <option value="total-desc">Most Tests</option>
+        </select>
+    </div>
+    
+    <!-- Results Grid -->
+    <div class="results-grid" id="resultsGrid"></div>
+    
+    <script>
+        const allReports = [{"category": "release", "branch": "0.2.0.0", "proposition": "SCXI11BEI", "date": "20260217_135418", "html_path": "../release/0.2.0.0/SCXI11BEI/web_result/fb_core_sanity_result.html", "test_type": "Core Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 190, "passed": 12, "failed": 158, "skipped": 20, "pass_rate": 6.3}, {"category": "release", "branch": "0.2.0.0", "proposition": "SCXI11BEI", "date": "20260217_135418", "html_path": "../release/0.2.0.0/SCXI11BEI/web_result/fb_badger_sanity_result.html", "test_type": "Badger Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 54, "passed": 2, "failed": 52, "skipped": 0, "pass_rate": 3.7}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SKXI11ADS", "date": "20260217_135251", "html_path": "../develop/RDKEMW-2222/SKXI11ADS/web_result/fb_core_sanity_result.html", "test_type": "Core Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 190, "passed": 12, "failed": 158, "skipped": 20, "pass_rate": 6.3}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SKXI11ADS", "date": "20260217_135251", "html_path": "../develop/RDKEMW-2222/SKXI11ADS/web_result/fb_badger_sanity_result.html", "test_type": "Badger Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 54, "passed": 2, "failed": 52, "skipped": 0, "pass_rate": 3.7}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SCXI11BEI", "date": "20260217_135251", "html_path": "../develop/RDKEMW-2222/SCXI11BEI/web_result/fb_core_sanity_result.html", "test_type": "Core Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 190, "passed": 12, "failed": 158, "skipped": 20, "pass_rate": 6.3}, {"category": "develop", "branch": "RDKEMW-2222", "proposition": "SCXI11BEI", "date": "20260217_135251", "html_path": "../develop/RDKEMW-2222/SCXI11BEI/web_result/fb_badger_sanity_result.html", "test_type": "Badger Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 54, "passed": 2, "failed": 52, "skipped": 0, "pass_rate": 3.7}, {"category": "develop", "branch": "RDKEMW-11111", "proposition": "SCXI11BEI", "date": "20260217_135116", "html_path": "../develop/RDKEMW-11111/SCXI11BEI/web_result/fb_core_sanity_result.html", "test_type": "Core Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 190, "passed": 12, "failed": 158, "skipped": 20, "pass_rate": 6.3}, {"category": "develop", "branch": "RDKEMW-11111", "proposition": "SCXI11BEI", "date": "20260217_135116", "html_path": "../develop/RDKEMW-11111/SCXI11BEI/web_result/fb_badger_sanity_result.html", "test_type": "Badger Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 54, "passed": 2, "failed": 52, "skipped": 0, "pass_rate": 3.7}, {"category": "release", "branch": "0.1.0.0", "proposition": "SKXI11ADS", "date": "20260217_134949", "html_path": "../release/0.1.0.0/SKXI11ADS/web_result/fb_core_sanity_result.html", "test_type": "Core Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 190, "passed": 12, "failed": 158, "skipped": 20, "pass_rate": 6.3}, {"category": "release", "branch": "0.1.0.0", "proposition": "SCXI11BEI", "date": "20260217_134949", "html_path": "../release/0.1.0.0/SCXI11BEI/web_result/fb_core_sanity_result.html", "test_type": "Core Sanity", "image": "SCXI11BEI_MIDDLEWARE_DEV_develop_20260114215542_AG", "rdk_version": "8.4.4.0", "total": 190, "passed": 12, "failed": 158, "skipped": 20, "pass_rate": 6.3}, {"category": "release", "branch": "0.1.0.0", "proposition": "SKXI11ADS", "date": "web_result", "html_path": "../release/0.1.0.0/SKXI11ADS/web_result/fb_badger_sanity_result.html", "test_type": "Badger Sanity", "image": "", "rdk_version": "", "total": 0, "passed": 0, "failed": 0, "skipped": 0, "pass_rate": 0}, {"category": "release", "branch": "0.1.0.0", "proposition": "SCXI11BEI", "date": "web_result", "html_path": "../release/0.1.0.0/SCXI11BEI/web_result/fb_badger_sanity_result.html", "test_type": "Badger Sanity", "image": "", "rdk_version": "", "total": 0, "passed": 0, "failed": 0, "skipped": 0, "pass_rate": 0}];
+        let filteredReports = [...allReports];
+        let currentQuickFilter = 'all';
+        
+        function formatDate(dateStr) {
+            if (!dateStr || dateStr === 'unknown') return 'Unknown';
+            try {
+                const year = dateStr.substring(0, 4);
+                const month = dateStr.substring(4, 6);
+                const day = dateStr.substring(6, 8);
+                const hour = dateStr.substring(9, 11);
+                const min = dateStr.substring(11, 13);
+                return `${day}/${month}/${year} ${hour}:${min}`;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+        function getPassRateClass(rate) {
+            if (rate >= 80) return 'high';
+            if (rate >= 50) return 'medium';
+            return 'low';
+        }
+        
+        function renderLatest() {
+            // Get selected proposition for latest filter
+            const selectedProp = document.getElementById('latestProposition').value;
+            const filteredReports = allReports.filter(r => r.proposition === selectedProp);
+            
+            // Get latest Core and Badger for both Develop and Release
+            const latestDevCore = filteredReports.find(r => r.category === 'develop' && r.test_type === 'Core Sanity');
+            const latestDevBadger = filteredReports.find(r => r.category === 'develop' && r.test_type === 'Badger Sanity');
+            const latestRelCore = filteredReports.find(r => r.category === 'release' && r.test_type === 'Core Sanity');
+            const latestRelBadger = filteredReports.find(r => r.category === 'release' && r.test_type === 'Badger Sanity');
+            
+            const getRateClass = (rate) => rate >= 50 ? 'high' : 'low';
+            
+            if (latestDevCore || latestDevBadger) {
+                const branch = (latestDevCore || latestDevBadger).branch;
+                document.getElementById('latest-develop').innerHTML = `
+                    <div class="branch-name">${branch}</div>
+                    ${latestDevCore ? `<div class="test-row"><span class="test-name">Core Sanity</span><span class="test-rate ${getRateClass(latestDevCore.pass_rate)}">${latestDevCore.pass_rate}%</span></div>` : ''}
+                    ${latestDevBadger ? `<div class="test-row"><span class="test-name">Badger Sanity</span><span class="test-rate ${getRateClass(latestDevBadger.pass_rate)}">${latestDevBadger.pass_rate}%</span></div>` : ''}
+                    <div style="margin-top:8px;">
+                        ${latestDevCore ? `<a href="${latestDevCore.html_path}" target="_blank">Core</a>` : ''}
+                        ${latestDevCore && latestDevBadger ? ' | ' : ''}
+                        ${latestDevBadger ? `<a href="${latestDevBadger.html_path}" target="_blank">Badger</a>` : ''}
+                    </div>
+                `;
+            } else {
+                document.getElementById('latest-develop').innerHTML = '<div style="opacity:0.7;font-size:12px;">No data for this proposition</div>';
+            }
+            
+            if (latestRelCore || latestRelBadger) {
+                const branch = (latestRelCore || latestRelBadger).branch;
+                document.getElementById('latest-release').innerHTML = `
+                    <div class="branch-name">${branch}</div>
+                    ${latestRelCore ? `<div class="test-row"><span class="test-name">Core Sanity</span><span class="test-rate ${getRateClass(latestRelCore.pass_rate)}">${latestRelCore.pass_rate}%</span></div>` : ''}
+                    ${latestRelBadger ? `<div class="test-row"><span class="test-name">Badger Sanity</span><span class="test-rate ${getRateClass(latestRelBadger.pass_rate)}">${latestRelBadger.pass_rate}%</span></div>` : ''}
+                    <div style="margin-top:8px;">
+                        ${latestRelCore ? `<a href="${latestRelCore.html_path}" target="_blank">Core</a>` : ''}
+                        ${latestRelCore && latestRelBadger ? ' | ' : ''}
+                        ${latestRelBadger ? `<a href="${latestRelBadger.html_path}" target="_blank">Badger</a>` : ''}
+                    </div>
+                `;
+            } else {
+                document.getElementById('latest-release').innerHTML = '<div style="opacity:0.7;font-size:12px;">No data for this proposition</div>';
+            }
+        }
+        
+        function renderResults() {
+            const grid = document.getElementById('resultsGrid');
+            const count = document.getElementById('resultsCount');
+            
+            // Group reports by branch + category + proposition
+            const grouped = {};
+            filteredReports.forEach(r => {
+                const key = `${r.category}-${r.branch}-${r.proposition}`;
+                if (!grouped[key]) {
+                    grouped[key] = { category: r.category, branch: r.branch, proposition: r.proposition, date: r.date, image: r.image, rdk_version: r.rdk_version, core: null, badger: null };
+                }
+                if (r.test_type === 'Core Sanity') grouped[key].core = r;
+                else grouped[key].badger = r;
+                // Use latest date
+                if (r.date > grouped[key].date) grouped[key].date = r.date;
+            });
+            
+            const groupedList = Object.values(grouped);
+            count.textContent = `Showing ${groupedList.length} branches (${filteredReports.length} reports)`;
+            
+            if (groupedList.length === 0) {
+                grid.innerHTML = '<div class="no-results">No reports found matching your criteria</div>';
+                return;
+            }
+            
+            grid.innerHTML = groupedList.map(g => {
+                const core = g.core;
+                const badger = g.badger;
+                return `
+                <div class="result-card">
+                    <div class="result-header">
+                        <div>
+                            <h3 class="result-title">${g.branch}</h3>
+                            <span class="badge ${g.category}">${g.category}</span>
+                        </div>
+                    </div>
+                    <div class="result-meta">
+                        <span>📅 ${formatDate(g.date)}</span>
+                        <span>📦 ${g.proposition}</span>
+                    </div>
+                    
+                    ${core ? `
+                    <div class="test-section">
+                        <div class="test-section-header">
+                            <a href="${core.html_path}" target="_blank" class="badge coresanity" style="text-decoration:none;">Core Sanity</a>
+                            <span class="pass-rate-inline ${getPassRateClass(core.pass_rate)}">${core.pass_rate}%</span>
+                            <a href="${core.html_path}" target="_blank" class="view-link">View →</a>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-passed" style="width: ${core.total > 0 ? (core.passed/core.total*100) : 0}%"></div>
+                                <div class="progress-failed" style="width: ${core.total > 0 ? (core.failed/core.total*100) : 0}%"></div>
+                                <div class="progress-skipped" style="width: ${core.total > 0 ? (core.skipped/core.total*100) : 0}%"></div>
+                            </div>
+                            <div class="progress-stats">
+                                <span class="stat-passed">✓ ${core.passed}</span>
+                                <span class="stat-failed">✗ ${core.failed}</span>
+                                <span class="stat-skipped">○ ${core.skipped}</span>
+                                <span>/ ${core.total}</span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${badger ? `
+                    <div class="test-section">
+                        <div class="test-section-header">
+                            <a href="${badger.html_path}" target="_blank" class="badge badgersanity" style="text-decoration:none;">Badger Sanity</a>
+                            <span class="pass-rate-inline ${getPassRateClass(badger.pass_rate)}">${badger.pass_rate}%</span>
+                            <a href="${badger.html_path}" target="_blank" class="view-link">View →</a>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-passed" style="width: ${badger.total > 0 ? (badger.passed/badger.total*100) : 0}%"></div>
+                                <div class="progress-failed" style="width: ${badger.total > 0 ? (badger.failed/badger.total*100) : 0}%"></div>
+                                <div class="progress-skipped" style="width: ${badger.total > 0 ? (badger.skipped/badger.total*100) : 0}%"></div>
+                            </div>
+                            <div class="progress-stats">
+                                <span class="stat-passed">✓ ${badger.passed}</span>
+                                <span class="stat-failed">✗ ${badger.failed}</span>
+                                <span class="stat-skipped">○ ${badger.skipped}</span>
+                                <span>/ ${badger.total}</span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="result-details">
+                        ${g.image ? `<div class="detail-row"><span class="detail-label">Image:</span><span class="detail-value">${g.image}</span></div>` : ''}
+                        ${g.rdk_version ? `<div class="detail-row"><span class="detail-label">RDK Ver:</span><span class="detail-value">${g.rdk_version}</span></div>` : ''}
+                    </div>
+                </div>
+            `}).join('');
+        }
+        
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const prop = document.getElementById('filterProposition').value;
+            const testType = document.getElementById('filterTestType').value;
+            const category = document.getElementById('filterCategory').value;
+            
+            filteredReports = allReports.filter(r => {
+                // Search filter
+                if (search && !r.branch.toLowerCase().includes(search) && 
+                    !r.proposition.toLowerCase().includes(search) &&
+                    !r.image.toLowerCase().includes(search) &&
+                    !r.rdk_version.toLowerCase().includes(search)) {
+                    return false;
+                }
+                // Dropdown filters
+                if (prop && r.proposition !== prop) return false;
+                if (testType && r.test_type !== testType) return false;
+                if (category && r.category !== category) return false;
+                
+                // Quick filters
+                if (currentQuickFilter === 'passed' && r.pass_rate < 80) return false;
+                if (currentQuickFilter === 'failed' && r.pass_rate >= 50) return false;
+                if (currentQuickFilter === 'develop' && r.category !== 'develop') return false;
+                if (currentQuickFilter === 'release' && r.category !== 'release') return false;
+                
+                return true;
+            });
+            
+            sortResults();
+        }
+        
+        function sortResults() {
+            const sort = document.getElementById('sortSelect').value;
+            
+            filteredReports.sort((a, b) => {
+                switch(sort) {
+                    case 'date-desc': return b.date.localeCompare(a.date);
+                    case 'date-asc': return a.date.localeCompare(b.date);
+                    case 'pass-desc': return b.pass_rate - a.pass_rate;
+                    case 'pass-asc': return a.pass_rate - b.pass_rate;
+                    case 'total-desc': return b.total - a.total;
+                    default: return 0;
+                }
+            });
+            
+            renderResults();
+        }
+        
+        function quickFilter(type) {
+            currentQuickFilter = type;
+            document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.quick-btn.${type}`).classList.add('active');
+            
+            // Reset category dropdown if quick filter is develop/release
+            if (type === 'develop' || type === 'release') {
+                document.getElementById('filterCategory').value = '';
+            }
+            
+            applyFilters();
+        }
+        
+        function copyToClipboard(text) {
+            const fullUrl = window.location.href.replace(/\/[^\/]*$/, '/') + text.replace('../', '');
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        }
+        
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('filterProposition').addEventListener('change', applyFilters);
+        document.getElementById('filterTestType').addEventListener('change', applyFilters);
+        document.getElementById('filterCategory').addEventListener('change', applyFilters);
+        
+        // Initial render
+        renderLatest();
+        renderResults();
+    </script>
+</body>
+</html>

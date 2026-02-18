@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AppGateway Report</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; background: #f4f7f9; color: #1a2c42; margin: 0; padding: 0; }
+    .container { max-width: 1400px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 6px 16px rgba(0,0,0,0.08); padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; }
+    .tabs { display: flex; border-bottom: 2px solid #e3e8ee; margin-bottom: 0; }
+    .tab { padding: 12px 32px; cursor: pointer; font-weight: 600; color: #1976d2; border: none; background: none; outline: none; transition: all 0.2s; }
+    .tab:hover { background: #e3f2fd; }
+    .tab.active { border-bottom: 3px solid #1976d2; color: #1a2c42; background: #f8f9fa; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    iframe { width: 100%; height: calc(100vh - 150px); min-height: 700px; border: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AppGateway Report</h1>
+    <div class="tabs">
+      <button class="tab active" data-tab="results">Results</button>
+      <button class="tab" data-tab="search">Search</button>
+      <button class="tab" data-tab="summary">Summary</button>
+      <button class="tab" data-tab="docs">Docs</button>
+    </div>
+    <div id="results" class="tab-content active">
+      <iframe id="resultsFrame" src="tabs/summary_tab.html" loading="lazy"></iframe>
+    </div>
+    <div id="search" class="tab-content">
+      <iframe id="searchFrame" src="tabs/search_tab.html" loading="lazy"></iframe>
+    </div>
+    <div id="summary" class="tab-content">
+      <iframe id="summaryFrame" src="tabs/graphs_tab.html" loading="lazy"></iframe>
+    </div>
+    <div id="docs" class="tab-content">
+      <iframe id="docsFrame" src="tabs/docs_tab.html" loading="lazy"></iframe>
+    </div>
+  </div>
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Restore saved tab on load
+    const savedTab = localStorage.getItem('activeTab');
+    if (savedTab) {
+      const savedTabBtn = document.querySelector(`.tab[data-tab="${savedTab}"]`);
+      if (savedTabBtn) {
+        tabs.forEach(t => t.classList.remove('active'));
+        savedTabBtn.classList.add('active');
+        tabContents.forEach(tc => tc.classList.remove('active'));
+        document.getElementById(savedTab).classList.add('active');
+      }
+    }
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        tabContents.forEach(tc => tc.classList.remove('active'));
+        document.getElementById(tab.dataset.tab).classList.add('active');
+        // Save to localStorage
+        localStorage.setItem('activeTab', tab.dataset.tab);
+        // Trigger resize for iframe content
+        const iframe = document.querySelector(`#${tab.dataset.tab} iframe`);
+        if (iframe) {
+          iframe.contentWindow.dispatchEvent(new Event('resize'));
+        }
+      });
+    });
+  </script>
+</body>
+</html>
