@@ -238,18 +238,59 @@ jobs:
             python3 .github/scripts/generate_badger_sanity_report_js.py "$TIMESTAMP_DIR/BadgerSanity_SchemaValidation_response.json"
             echo "[INFO] Generated Badger Sanity HTML report"
           fi
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add "$RESULT_DIR"/web_result/* || true
-          if git diff --cached --quiet; then
-            echo "No web_result changes to commit."
-          else
-            git commit -m "Merge $BRANCH into webpage and update web_result HTML after validation"
-            git push origin webpage
-          fi
-          echo "✅ Html validation reports generated and pushed to webpage"
+          echo "✅ Html validation reports generated"
         else
           echo "[WARN] RESULT_DIR $RESULT_DIR does not exist, skipping validation."
+        fi
+
+    # run generate_index.py to update index.html with new results
+    - name: Update index.html with new results
+      if: ${{ success() }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        set -euo pipefail
+        # Ensure we are on webpage branch
+        git checkout webpage
+        
+        # Check if generate_index.py script exists
+        if [ ! -f ".github/scripts/generate_index.py" ]; then
+          echo "❌ [ERROR] generate_index.py not found at .github/scripts/generate_index.py"
+          exit 1
+        fi
+        
+        # Check if summary.json files exist
+        SUMMARY_COUNT=$(find . -path '**/web_result/summary.json' -type f 2>/dev/null | wc -l)
+        if [ "$SUMMARY_COUNT" -eq 0 ]; then
+          echo "⚠️ [WARN] No summary.json files found in web_result directories, skipping index generation"
+          exit 0
+        fi
+        echo "[INFO] Found $SUMMARY_COUNT summary.json file(s)"
+        
+        # Run the index generation script
+        if python3 .github/scripts/generate_index.py; then
+          echo "✅ index.html updated with new results"
+        else
+          echo "❌ [ERROR] Failed to generate index.html"
+          exit 1
+        fi
+
+    - name: Commit and push web_result changes
+      if: ${{ success() }}
+      env:
+        BRANCH: ${{ github.ref_name }}
+        RESULT_DIR: ${{ env.RESULT_DIR }}
+      run: |
+        set -euo pipefail
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add "$RESULT_DIR"/web_result/* tabs/* index.html || true
+        if git diff --cached --quiet; then
+          echo "No web_result changes to commit."
+        else
+          git commit -m "Merge $BRANCH into webpage, generated web_result, refreshed index.html"
+          git push origin webpage
+          echo "✅ Web result changes pushed to webpage"
         fi
 
         
